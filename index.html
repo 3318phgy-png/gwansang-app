@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>관상도사 · AI 실관상</title>
+  <meta name="description" content="내 얼굴 사진으로 보는 진짜 관상! 마의상법·유장상법·신상전편 3대 고전 기반으로 눈썹·눈·코·입·귀를 실측해 재물운·연애운·취업운까지 풀어드려요." />
+  <meta property="og:title" content="관상도사 · 내 얼굴로 보는 실관상" />
+  <meta property="og:description" content="사진 한 장으로 재물운·연애운·취업운·건강운… 3대 관상 고전 기반 실측 관상" />
+  <meta name="theme-color" content="#2b1d5c" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+</head>
+<body>
+  <!-- ═══════════ 헤더 ═══════════ -->
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="#read" data-tab="read">
+        <span class="logo-mark">相</span>
+        <span class="logo-text">관상도사<small>3대 고전으로 읽는 실관상</small></span>
+      </a>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="read">📸 내 관상</button>
+        <button class="tab" data-tab="parts">👁️ 부위별 관상</button>
+        <button class="tab" data-tab="fortune">🍀 운세별 관상</button>
+        <button class="tab" data-tab="figures">🌏 인물 관상</button>
+        <button class="tab" data-tab="books">📜 3대 고전</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 광고: 상단 리더보드 (PC 728×90 / 모바일 320×100) -->
+  <div class="wrap"><div class="ad-slot ad-top" data-ad="top"></div></div>
+
+  <div class="wrap layout">
+    <main id="main">
+
+      <!-- ═══════════ 탭 1: 내 관상 ═══════════ -->
+      <section class="panel active" id="panel-read">
+        <div class="hero" id="hero">
+          <div class="hero-text">
+            <p class="eyebrow">마의상법 · 유장상법 · 신상전편</p>
+            <h1>얼굴에 쓰인 운명,<br /><span class="grad">진짜로</span> 읽어드릴게요</h1>
+            <p class="lead">랜덤 운세 아니고요, 진짜 <b>내 얼굴</b>을 478개 지점으로 실측해서 눈썹·눈·코·입·턱의 비율로 관상을 풀어요. 사진은 기기 밖으로 나가지 않아요.</p>
+            <div class="cta-row">
+              <button class="btn btn-primary btn-xl" id="btnCamera">📸 지금 바로 촬영</button>
+              <label class="btn btn-ghost btn-xl" for="fileInput">🖼️ 사진 불러오기</label>
+              <input type="file" id="fileInput" accept="image/*" hidden />
+            </div>
+            <div class="drop-hint" id="dropZone">또는 여기로 사진을 끌어다 놓으세요</div>
+            <ul class="photo-tips">
+              <li>😀 정면을 보고</li><li>💡 밝은 곳에서</li><li>🙆 앞머리는 살짝 넘기고</li><li>🕶️ 안경·마스크는 벗고</li>
+            </ul>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="orb">
+              <svg viewBox="0 0 200 240" class="face-sketch">
+                <ellipse cx="100" cy="120" rx="70" ry="92" />
+                <path d="M55 92 q20 -12 38 -2" /><path d="M107 90 q20 -10 38 2" />
+                <ellipse cx="74" cy="108" rx="13" ry="6" /><ellipse cx="126" cy="108" rx="13" ry="6" />
+                <path d="M100 112 v32 q-10 6 -14 4 M100 144 q10 6 14 4" />
+                <path d="M78 172 q22 14 44 0" />
+              </svg>
+              <span class="orb-tag t1">재백궁</span><span class="orb-tag t2">명궁</span><span class="orb-tag t3">관록궁</span><span class="orb-tag t4">출납관</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="ear-picker card">
+          <div class="ear-head"><b>👂 귀 모양 (선택)</b><span>정면 사진에선 귀가 잘 안 보여요. 아시면 골라 주세요!</span></div>
+          <div class="chips" id="earChips"></div>
+        </div>
+
+        <!-- 분석 진행 -->
+        <div class="analyzing card hidden" id="analyzing">
+          <div class="scan-box">
+            <canvas id="scanCanvas"></canvas>
+            <div class="scan-line"></div>
+          </div>
+          <div class="scan-msg">
+            <div class="spinner"></div>
+            <p id="scanMsg">관상도사가 얼굴을 살피는 중…</p>
+            <ol class="scan-steps" id="scanSteps">
+              <li>얼굴 478개 지점 찾기</li><li>삼정(三停) 비율 재기</li><li>오관(五官) 살피기</li><li>십이궁 기운 읽기</li><li>3대 고전과 대조하기</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- 결과 -->
+        <div class="result hidden" id="result"></div>
+      </section>
+
+      <!-- ═══════════ 탭 2: 부위별 관상 ═══════════ -->
+      <section class="panel" id="panel-parts">
+        <div class="section-head">
+          <p class="eyebrow">기본 관상학</p>
+          <h2>얼굴 지도 · 십이궁(十二宮)</h2>
+          <p>마의상법은 얼굴을 열두 개의 궁(宮)으로 나눠 각 자리에 운을 배정했어요. 점을 눌러 보세요!</p>
+        </div>
+        <div class="palace-wrap card">
+          <div class="palace-map" id="palaceMap"></div>
+          <div class="palace-info" id="palaceInfo"></div>
+        </div>
+        <div class="section-head"><h2>오관(五官) · 다섯 개의 관문</h2></div>
+        <div class="organ-grid" id="organGrid"></div>
+        <div class="ad-slot ad-infeed" data-ad="infeed"></div>
+        <div class="section-head"><h2>부위별 유형 사전</h2><p>내 얼굴은 어느 쪽일까? 실제 분석에서는 측정 비율로 자동 판정돼요.</p></div>
+        <div class="dict" id="partDict"></div>
+      </section>
+
+      <!-- ═══════════ 탭 3: 운세별 관상 ═══════════ -->
+      <section class="panel" id="panel-fortune">
+        <div class="section-head">
+          <p class="eyebrow">생활 · 상황별 관상</p>
+          <h2>운세별로 어디를 볼까?</h2>
+          <p>재물·연애·취업·건강·사업·명예·자식·인복 — 각 운이 얼굴 어디에 깃드는지, 그리고 메이크업과 표정으로 운을 여는 법까지.</p>
+        </div>
+        <div class="fortune-guide" id="fortuneGuide"></div>
+        <div class="section-head"><h2>💄 개운(開運) 메이크업 · 인상 팁</h2><p>유장상법은 '얼굴은 마음과 습관을 따라 변한다'고 했어요.</p></div>
+        <div class="tip-grid" id="tipGrid"></div>
+      </section>
+
+      <!-- ═══════════ 탭 4: 인물 관상 ═══════════ -->
+      <section class="panel" id="panel-figures">
+        <div class="section-head">
+          <p class="eyebrow">인물 관상 리서치</p>
+          <h2>그 사람은 왜 성공했을까? 얼굴로 본 위인·스타</h2>
+          <p>공개된 초상화·사진의 널리 알려진 인상을 바탕으로 한 재미용 해석이에요.</p>
+        </div>
+        <div class="filter" id="figFilter">
+          <button class="chip active" data-f="all">🌐 전체</button>
+          <button class="chip" data-f="국내">🇰🇷 국내</button>
+          <button class="chip" data-f="해외">🌍 해외</button>
+        </div>
+        <div class="fig-grid" id="figGrid"></div>
+      </section>
+
+      <!-- ═══════════ 탭 5: 3대 고전 ═══════════ -->
+      <section class="panel" id="panel-books">
+        <div class="section-head">
+          <p class="eyebrow">이 앱이 참고한 책</p>
+          <h2>관상학 3대 고전</h2>
+          <p>국내 관상가들이 '3대 상서(相書)'로 꼽는 고전이에요. 관상도사의 모든 풀이는 이 책들의 체계를 바탕으로 합니다.</p>
+        </div>
+        <div class="book-grid" id="bookGrid"></div>
+        <div class="card concept">
+          <h3>📐 삼정(三停) — 얼굴을 셋으로 나누기</h3>
+          <div class="sanjeong">
+            <div><b>상정</b><span>머리털~눈썹</span><em>초년운 · 지혜 · 부모덕</em></div>
+            <div><b>중정</b><span>눈썹~코끝</span><em>중년운 · 의지 · 재물</em></div>
+            <div><b>하정</b><span>코밑~턱끝</span><em>말년운 · 건강 · 자손</em></div>
+          </div>
+          <p>세 부분의 길이가 비슷할수록 일생의 운이 고르게 흐른다고 봅니다. 관상도사는 사진에서 실제로 이 비율을 재요.</p>
+        </div>
+      </section>
+
+      <p class="disclaimer">관상도사의 풀이는 전통 관상학을 바탕으로 한 엔터테인먼트 콘텐츠이며 과학적·의학적 판단이 아닙니다. 사진은 브라우저 안에서만 처리되고 서버로 전송·저장되지 않습니다.</p>
+    </main>
+
+    <!-- ═══════════ 사이드바 ═══════════ -->
+    <aside class="sidebar">
+      <div class="card today">
+        <p class="eyebrow">오늘의 관상 한마디</p>
+        <p id="todayWord"></p>
+      </div>
+      <div class="ad-slot ad-side" data-ad="side"></div>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p><b>관상도사</b> · 마의상법 · 유장상법 · 신상전편 기반 재미용 관상 서비스</p>
+      <p class="small">© 2026 관상도사. 광고 문의 · 개인정보처리방침 · 이용약관</p>
+    </div>
+  </footer>
+
+  <!-- 모바일 하단 고정 광고 (320×50) -->
+  <div class="ad-anchor" id="adAnchor">
+    <div class="ad-slot ad-bottom" data-ad="bottom"></div>
+    <button class="ad-close" id="adClose" aria-label="광고 닫기">×</button>
+  </div>
+
+  <!-- 카메라 모달 -->
+  <div class="modal hidden" id="camModal" role="dialog" aria-modal="true" aria-label="사진 촬영">
+    <div class="cam-box">
+      <video id="camVideo" playsinline autoplay muted></video>
+      <svg class="cam-guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><defs><mask id="m"><rect width="300" height="400" fill="#fff"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="#000"/></mask></defs><rect width="300" height="400" fill="rgba(10,6,30,.55)" mask="url(#m)"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="none" stroke="#ffd36e" stroke-width="3" stroke-dasharray="8 6"/></svg>
+      <div class="cam-count" id="camCount"></div>
+      <p class="cam-hint">타원 안에 얼굴을 맞추고 정면을 봐 주세요</p>
+      <div class="cam-ctrl">
+        <button class="btn btn-ghost" id="camCancel">취소</button>
+        <button class="shutter" id="camShot" aria-label="촬영"></button>
+        <button class="btn btn-ghost" id="camFlip">🔄 전환</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
