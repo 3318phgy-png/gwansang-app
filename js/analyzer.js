@@ -31,15 +31,15 @@ export async function quickCheck(canvas) {
   let sum = 0; for (let i = 0; i < px.length; i += 16) sum += px[i] + px[i + 1] + px[i + 2];
   const bright = sum / (px.length / 16) / 3;
   const res = lmk.detect(canvas);
-  if (!res.faceLandmarks || !res.faceLandmarks.length) return { ok: false, reason: bright < 40 ? "dark" : "none" };
+  if (!res.faceLandmarks || !res.faceLandmarks.length) return { ok: false, reason: bright < 40 ? "dark" : "none", bright };
   const pts = res.faceLandmarks[0];
   let x0 = 1, x1 = 0, y0 = 1, y1 = 0;
   for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  if (y1 - y0 < 0.28) return { ok: false, reason: "small" };
-  if (Math.abs(cx - 0.5) > 0.2 || Math.abs(cy - 0.48) > 0.22) return { ok: false, reason: "off" };
-  if (bright < 45) return { ok: true, reason: "dark" };
-  return { ok: true, reason: "good" };
+  if (y1 - y0 < 0.28) return { ok: false, reason: "small", bright };
+  if (Math.abs(cx - 0.5) > 0.2 || Math.abs(cy - 0.48) > 0.22) return { ok: false, reason: "off", bright };
+  if (bright < 45) return { ok: true, reason: "dark", bright };
+  return { ok: true, reason: "good", bright };
 }
 
 // ---------------------------------------------------------------------

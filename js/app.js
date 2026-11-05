@@ -15,7 +15,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, facing: "user" };
+const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, mirror: true, devices: [], devIdx: 0, deviceId: null, darkCount: 0 };
 
 // ───────────────────────── 탭 ─────────────────────────
 function showTab(id) {
@@ -77,7 +77,12 @@ function toCanvas(src, w, h, mirror = false, max = 1400) {
 // 흐름: 카메라 켜기 → (실시간으로 얼굴이 잘 보이는지 알려 줌) → 촬영 → 찍힌 사진 확인 → 관상 보기
 $("#btnCamera").addEventListener("click", openCamera);
 $("#camCancel").addEventListener("click", closeCamera);
-$("#camFlip").addEventListener("click", () => { state.facing = state.facing === "user" ? "environment" : "user"; startStream(); });
+$("#camFlip").addEventListener("click", () => {
+  if (state.devices.length < 2) return camStatus("이 기기에서 찾은 카메라가 하나뿐이에요.", "");
+  state.devIdx = (state.devIdx + 1) % state.devices.length;
+  state.deviceId = state.devices[state.devIdx].deviceId;
+  startStream();
+});
 $("#camShot").addEventListener("click", countdownShot);
 $("#camRetake").addEventListener("click", retake);
 $("#camUse").addEventListener("click", () => { const c = state.shot; closeCamera(); if (c) runAnalysis(c); });
@@ -121,8 +126,26 @@ async function startStream() {
   stopStream();
   $("#camShot").disabled = true;
   camStatus("wait");
+  state.darkCount = 0;
+  const size = { width: { ideal: 1280 }, height: { ideal: 960 } };
+  const video = state.deviceId ? { deviceId: { exact: state.deviceId }, ...size } : { facingMode: "user", ...size };
   try {
-    state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: state.facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+    try { state.stream = await navigator.mediaDevices.getUserMedia({ video, audio: false }); }
+    catch (e1) {
+      if (e1.name === "NotAllowedError") throw e1;
+      // 원하는 카메라를 못 열면 아무 카메라나 열어 봅니다
+      state.deviceId = null;
+      state.stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }
+    // 이 컴퓨터/휴대폰의 카메라 목록 (맥은 아이폰 연속성 카메라·가상 카메라가 잡히기도 해요)
+    const track = state.stream.getVideoTracks()[0];
+    const set = track.getSettings ? track.getSettings() : {};
+    state.mirror = set.facingMode !== "environment";
+    try {
+      state.devices = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput");
+      state.devIdx = Math.max(0, state.devices.findIndex((d) => d.deviceId === set.deviceId));
+    } catch (e2) { state.devices = []; }
+    $("#camFlip").textContent = state.devices.length > 1 ? `🔄 카메라 바꾸기 (${state.devIdx + 1}/${state.devices.length})` : "🔄 카메라 바꾸기";
   } catch (e) {
     closeCamera();
     return showNotice("카메라 사용을 허락해 주세요",
@@ -131,7 +154,7 @@ async function startStream() {
   const v = $("#camVideo");
   v.setAttribute("playsinline", ""); v.muted = true;
   v.srcObject = state.stream;
-  v.classList.toggle("rear", state.facing !== "user");
+  v.classList.toggle("rear", !state.mirror);
   try { await v.play(); } catch (e) { /* 일부 브라우저는 자동 재생 */ }
   // 실제 화면이 들어올 때까지 기다리기 (사파리는 처음 1~2초 까만 화면)
   const t0 = Date.now();
@@ -157,10 +180,16 @@ async function liveCheck() {
   if (!state.stream || state.shot) return;
   if (!counting) {
     try {
-      const small = toCanvas(v, v.videoWidth, v.videoHeight, state.facing === "user", 360);
+      const small = toCanvas(v, v.videoWidth, v.videoHeight, state.mirror, 360);
       const r = await quickCheck(small);
       if (!state.stream || state.shot || counting) return;
-      camStatus(r.ok ? (r.reason === "dark" ? "dark" : "good") : r.reason);
+      // 화면이 계속 새까마면: 카메라 가리개, 다른 카메라(연속성 카메라·가상 카메라) 선택 문제
+      state.darkCount = r.bright < 14 ? (state.darkCount || 0) + 1 : 0;
+      if (state.darkCount >= 4) {
+        camStatus(state.devices.length > 1
+          ? `⬛ 카메라 화면이 까매요. 아래 '카메라 바꾸기'를 눌러 보세요. (이 컴퓨터에 카메라가 ${state.devices.length}개 있어요)`
+          : "⬛ 카메라 화면이 까매요. 카메라 가리개가 닫혀 있거나, 줌·페이스타임 같은 다른 프로그램이 카메라를 쓰고 있을 수 있어요. 그 프로그램을 닫고 '취소' 후 다시 눌러 주세요.", "bad");
+      } else camStatus(r.ok ? (r.reason === "dark" ? "dark" : "good") : r.reason);
     } catch (e) { camStatus("📷 카메라 준비 완료! 얼굴을 노란 타원 안에 맞춰 주세요.", ""); }
   }
   state.liveTimer = setTimeout(liveCheck, 600);
@@ -176,7 +205,7 @@ async function countdownShot() {
   const v = $("#camVideo");
   const flash = document.createElement("div"); flash.className = "flash"; document.body.appendChild(flash); setTimeout(() => flash.remove(), 500);
   // 전면 카메라는 사용자가 거울처럼 보던 모습 그대로 저장
-  const c = toCanvas(v, v.videoWidth, v.videoHeight, state.facing === "user");
+  const c = toCanvas(v, v.videoWidth, v.videoHeight, state.mirror);
   counting = false;
   state.shot = c;
   clearTimeout(state.liveTimer);
