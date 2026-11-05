@@ -16,12 +16,30 @@ export async function initAnalyzer(onProgress = () => {}) {
     numFaces: 1,
     outputFaceBlendshapes: true,
   });
-  try {
-    landmarker = await FaceLandmarker.createFromOptions(fileset, opts("GPU"));
-  } catch (e) {
-    landmarker = await FaceLandmarker.createFromOptions(fileset, opts("CPU"));
-  }
+  // 사진 한 장 분석에는 CPU로 충분하고, 사파리(맥·아이폰)에서도 가장 안정적입니다.
+  landmarker = await FaceLandmarker.createFromOptions(fileset, opts("CPU"));
   return landmarker;
+}
+
+// 카메라 화면에서 얼굴이 잘 보이는지 빠르게 확인합니다.
+// 반환: { ok, reason }  reason: "none" | "small" | "off" | "dark" | "good"
+export async function quickCheck(canvas) {
+  const lmk = await initAnalyzer();
+  const W = canvas.width, H = canvas.height;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  const px = ctx.getImageData(0, 0, W, H).data;
+  let sum = 0; for (let i = 0; i < px.length; i += 16) sum += px[i] + px[i + 1] + px[i + 2];
+  const bright = sum / (px.length / 16) / 3;
+  const res = lmk.detect(canvas);
+  if (!res.faceLandmarks || !res.faceLandmarks.length) return { ok: false, reason: bright < 40 ? "dark" : "none" };
+  const pts = res.faceLandmarks[0];
+  let x0 = 1, x1 = 0, y0 = 1, y1 = 0;
+  for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+  if (y1 - y0 < 0.28) return { ok: false, reason: "small" };
+  if (Math.abs(cx - 0.5) > 0.2 || Math.abs(cy - 0.48) > 0.22) return { ok: false, reason: "off" };
+  if (bright < 45) return { ok: true, reason: "dark" };
+  return { ok: true, reason: "good" };
 }
 
 // ---------------------------------------------------------------------

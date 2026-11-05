@@ -1,7 +1,7 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage } from "./analyzer.js";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
 import { buildReading, level } from "./reading.js";
 import {
@@ -15,7 +15,7 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const state = { ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, facing: "user" };
+const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, facing: "user" };
 
 // ───────────────────────── 탭 ─────────────────────────
 function showTab(id) {
@@ -59,12 +59,12 @@ function loadFile(file) {
   const url = URL.createObjectURL(file);
   const img = new Image();
   img.onload = () => { URL.revokeObjectURL(url); runAnalysis(toCanvas(img, img.naturalWidth, img.naturalHeight)); };
-  img.onerror = () => toast("사진을 열 수 없어요. 다른 사진으로 시도해 주세요");
+  img.onerror = () => showNotice("사진을 열 수 없어요", "이 사진 파일은 열리지 않아요. JPG나 PNG 사진으로 다시 골라 주세요.");
   img.src = url;
 }
 
-function toCanvas(src, w, h, mirror = false) {
-  const max = 1400, s = Math.min(1, max / Math.max(w, h));
+function toCanvas(src, w, h, mirror = false, max = 1400) {
+  const s = Math.min(1, max / Math.max(w, h));
   const c = document.createElement("canvas");
   c.width = Math.round(w * s); c.height = Math.round(h * s);
   const ctx = c.getContext("2d");
@@ -74,48 +74,157 @@ function toCanvas(src, w, h, mirror = false) {
 }
 
 // ───────────────────────── 카메라 ─────────────────────────
+// 흐름: 카메라 켜기 → (실시간으로 얼굴이 잘 보이는지 알려 줌) → 촬영 → 찍힌 사진 확인 → 관상 보기
 $("#btnCamera").addEventListener("click", openCamera);
 $("#camCancel").addEventListener("click", closeCamera);
 $("#camFlip").addEventListener("click", () => { state.facing = state.facing === "user" ? "environment" : "user"; startStream(); });
 $("#camShot").addEventListener("click", countdownShot);
+$("#camRetake").addEventListener("click", retake);
+$("#camUse").addEventListener("click", () => { const c = state.shot; closeCamera(); if (c) runAnalysis(c); });
+
+const CAM_MSG = {
+  wait: ["📷 카메라를 켜는 중이에요…", ""],
+  black: ["📷 카메라 화면이 아직 까맣게 보여요. 잠시만 기다려 주세요. 계속 까맣다면 카메라를 쓰는 다른 프로그램(줌·페이스타임 등)을 닫아 주세요.", "bad"],
+  none: ["😶 얼굴이 안 보여요. 노란 타원 안에 얼굴을 넣어 주세요.", "bad"],
+  dark: ["💡 화면이 너무 어두워요. 밝은 곳으로 가거나 불을 켜 주세요.", "bad"],
+  small: ["🔍 얼굴이 너무 작아요. 화면에 조금 더 가까이 와 주세요.", "bad"],
+  off: ["↔️ 얼굴을 노란 타원 가운데로 맞춰 주세요.", "bad"],
+  good: ["✅ 얼굴이 잘 보여요! 가운데 빨간 버튼을 눌러 주세요.", "ok"],
+};
+// key가 CAM_MSG에 있으면 그 문구, 없으면 key 자체를 문구로 사용. cls로 색을 지정할 수 있음.
+function camStatus(key, cls) {
+  const preset = CAM_MSG[key];
+  const text = preset ? preset[0] : key;
+  const c = cls !== undefined ? cls : preset ? preset[1] : "";
+  const el = $("#camStatus"); el.textContent = text; el.className = "cam-status " + c;
+  $("#camOval").setAttribute("stroke", c === "ok" ? "#34e08a" : c === "bad" ? "#ff6b8b" : "#ffd36e");
+}
 
 async function openCamera() {
-  if (!navigator.mediaDevices?.getUserMedia) return toast("이 브라우저는 카메라를 지원하지 않아요. 사진 불러오기를 이용해 주세요");
+  if (!navigator.mediaDevices?.getUserMedia) {
+    return showNotice("카메라를 쓸 수 없어요", "이 브라우저에서는 카메라를 쓸 수 없어요. 대신 '다른 사진 불러오기'를 눌러 휴대폰이나 컴퓨터에 있는 얼굴 사진을 골라 주세요.");
+  }
+  hideNotice();
   $("#camModal").classList.remove("hidden");
-  initAnalyzer().catch(() => {}); // 촬영하는 동안 엔진 미리 준비
+  showShootMode();
+  initAnalyzer().catch(() => {}); // 카메라가 켜지는 동안 관상 엔진도 미리 준비
   await startStream();
+}
+function showShootMode() {
+  state.shot = null;
+  $("#camPreview").classList.add("hidden");
+  $("#camCtrlShoot").classList.remove("hidden");
+  $("#camCtrlConfirm").classList.add("hidden");
+  $("#camUse").classList.remove("hidden");
 }
 async function startStream() {
   stopStream();
+  $("#camShot").disabled = true;
+  camStatus("wait");
   try {
-    state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: state.facing, width: { ideal: 1280 }, height: { ideal: 1280 } }, audio: false });
-    const v = $("#camVideo"); v.srcObject = state.stream; v.classList.toggle("rear", state.facing !== "user");
+    state.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: state.facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
   } catch (e) {
     closeCamera();
-    toast("카메라 권한이 필요해요. 브라우저 설정에서 허용하거나 사진을 불러와 주세요", 4500);
+    return showNotice("카메라 사용을 허락해 주세요",
+      "카메라가 꺼져 있거나 사용 허락이 안 되어 있어요. 주소창의 카메라 표시를 누르거나(사파리: 메뉴 '사파리 → 이 웹 사이트에 대한 설정 → 카메라') '허용'으로 바꾼 뒤 다시 찍어 주세요. 아니면 '다른 사진 불러오기'로 얼굴 사진을 골라도 돼요.");
   }
+  const v = $("#camVideo");
+  v.setAttribute("playsinline", ""); v.muted = true;
+  v.srcObject = state.stream;
+  v.classList.toggle("rear", state.facing !== "user");
+  try { await v.play(); } catch (e) { /* 일부 브라우저는 자동 재생 */ }
+  // 실제 화면이 들어올 때까지 기다리기 (사파리는 처음 1~2초 까만 화면)
+  const t0 = Date.now();
+  const myStream = state.stream;
+  while (state.stream === myStream && (v.videoWidth === 0 || v.readyState < 2)) {
+    if (Date.now() - t0 > 4000) camStatus("black");
+    await sleep(150);
+  }
+  if (state.stream !== myStream) return;
+  $("#camShot").disabled = false;
+  liveCheck();
 }
-function stopStream() { state.stream?.getTracks().forEach((t) => t.stop()); state.stream = null; }
-function closeCamera() { stopStream(); $("#camModal").classList.add("hidden"); $("#camCount").textContent = ""; }
+function stopStream() {
+  state.stream?.getTracks().forEach((t) => t.stop()); state.stream = null;
+  clearTimeout(state.liveTimer);
+}
+function closeCamera() { stopStream(); $("#camModal").classList.add("hidden"); $("#camCount").textContent = ""; counting = false; }
+
+// 0.6초마다 카메라 화면을 살펴서 얼굴이 잘 보이는지 알려 줍니다.
+async function liveCheck() {
+  clearTimeout(state.liveTimer);
+  const v = $("#camVideo");
+  if (!state.stream || state.shot) return;
+  if (!counting) {
+    try {
+      const small = toCanvas(v, v.videoWidth, v.videoHeight, state.facing === "user", 360);
+      const r = await quickCheck(small);
+      if (!state.stream || state.shot || counting) return;
+      camStatus(r.ok ? (r.reason === "dark" ? "dark" : "good") : r.reason);
+    } catch (e) { camStatus("📷 카메라 준비 완료! 얼굴을 노란 타원 안에 맞춰 주세요.", ""); }
+  }
+  state.liveTimer = setTimeout(liveCheck, 600);
+}
+
 let counting = false;
 async function countdownShot() {
-  if (counting) return; counting = true;
+  if (counting || !state.stream) return; counting = true;
   const el = $("#camCount");
-  for (const n of [3, 2, 1]) { el.textContent = n; await sleep(700); }
+  camStatus("😊 움직이지 마세요! 곧 찍습니다", "");
+  for (const n of [3, 2, 1]) { el.textContent = n; await sleep(800); if (!state.stream) { counting = false; el.textContent = ""; return; } }
   el.textContent = "";
   const v = $("#camVideo");
   const flash = document.createElement("div"); flash.className = "flash"; document.body.appendChild(flash); setTimeout(() => flash.remove(), 500);
   // 전면 카메라는 사용자가 거울처럼 보던 모습 그대로 저장
   const c = toCanvas(v, v.videoWidth, v.videoHeight, state.facing === "user");
   counting = false;
-  closeCamera();
-  runAnalysis(c);
+  state.shot = c;
+  clearTimeout(state.liveTimer);
+  // 찍힌 사진을 화면에 그대로 보여 주고 확인받기
+  const pv = $("#camPreview"); pv.width = c.width; pv.height = c.height; pv.getContext("2d").drawImage(c, 0, 0);
+  pv.classList.remove("hidden");
+  $("#camCtrlShoot").classList.add("hidden");
+  $("#camCtrlConfirm").classList.remove("hidden");
+  camStatus("🔎 찍힌 사진을 확인하는 중…", "");
+  try {
+    const r = await quickCheck(toCanvas(c, c.width, c.height, false, 480));
+    if (r.ok) {
+      camStatus(r.reason === "dark"
+        ? "📸 찍혔어요! 조금 어둡지만 볼 수 있어요. 아래 초록 버튼 '이 사진으로 보기'를 눌러 주세요."
+        : "📸 잘 찍혔어요! 아래 초록 버튼 '이 사진으로 보기'를 눌러 주세요.", "ok");
+    } else {
+      const why = { dark: " (너무 어두워요)", small: " (얼굴이 너무 작아요)", off: " (얼굴이 가운데가 아니에요)" }[r.reason] || "";
+      camStatus("😢 이 사진에서는 얼굴이 잘 안 보여요" + why + ". '다시 찍기'를 눌러 주세요.", "bad");
+      $("#camUse").classList.add("hidden");
+    }
+  } catch (e) { camStatus("📸 찍혔어요! 사진이 괜찮으면 '이 사진으로 보기'를 눌러 주세요.", ""); }
+}
+async function retake() {
+  showShootMode();
+  if (!state.stream) await startStream(); else { camStatus("wait"); liveCheck(); }
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ───────────────────────── 안내 카드 (사라지지 않는 안내) ─────────────────────────
+function showNotice(title, text, photo) {
+  $("#noticeTitle").textContent = title;
+  $("#noticeText").textContent = text;
+  const nc = $("#noticePhoto");
+  if (photo) { nc.width = photo.width; nc.height = photo.height; nc.getContext("2d").drawImage(photo, 0, 0); nc.classList.remove("hidden"); }
+  else nc.classList.add("hidden");
+  $("#notice").classList.remove("hidden");
+  $("#notice").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+function hideNotice() { $("#notice").classList.add("hidden"); }
+$("#noticeCamera").addEventListener("click", openCamera);
 
 // ───────────────────────── 분석 ─────────────────────────
 async function runAnalysis(canvas) {
   showTab("read");
+  hideNotice();
+  if (!canvas || !canvas.width || !canvas.height) {
+    return showNotice("사진이 제대로 찍히지 않았어요", "카메라 화면이 아직 준비되지 않았을 때 찍힌 것 같아요. '다시 찍기'를 눌러 주세요.");
+  }
   state.photo = canvas;
   $("#result").classList.add("hidden");
   const box = $("#analyzing"); box.classList.remove("hidden");
@@ -132,7 +241,8 @@ async function runAnalysis(canvas) {
     clearInterval(tick); steps.forEach((s) => s.classList.add("done"));
     if (!result) {
       box.classList.add("hidden");
-      return toast("얼굴을 찾지 못했어요 😢 정면 얼굴이 크게 나온 밝은 사진으로 다시 시도해 주세요", 5000);
+      return showNotice("얼굴을 찾지 못했어요 😢",
+        "사진에서 얼굴이 보이지 않아요. 옆의 사진을 확인해 보세요. 화면이 까맣거나 어둡다면 밝은 곳에서, 얼굴이 작다면 가까이에서, 정면을 보고 다시 찍어 주세요. 안경과 마스크는 벗고, 앞머리는 넘기면 더 좋아요.", canvas);
     }
     drawOverlay(sc, canvas, result.landmarks, "mesh", false);
     await sleep(600);
@@ -140,11 +250,12 @@ async function runAnalysis(canvas) {
     state.reading = buildReading(result, state.ear);
     box.classList.add("hidden");
     renderResult(true);
-    if (result.quality.yaw > 0.12) toast("📐 고개가 조금 돌아가 있어요. 정면 사진이면 더 정확해요!", 4500);
+    if (result.quality.yaw > 0.12) toast("📐 고개가 조금 돌아가 있어요. 정면 사진이면 더 정확해요!", 6000);
   } catch (err) {
     console.error(err);
     clearInterval(tick); box.classList.add("hidden");
-    toast("관상 엔진을 불러오지 못했어요. 네트워크를 확인하고 다시 시도해 주세요", 5000);
+    showNotice("관상 엔진을 불러오지 못했어요",
+      "인터넷 연결이 느리거나 끊겼을 수 있어요. 화면을 새로고침(맥: ⌘+R, 윈도우: F5)한 뒤 다시 해 주세요. 계속 안 되면 크롬이나 사파리 최신 버전으로 열어 주세요. (오류: " + (err?.message || err) + ")", canvas);
   }
 }
 

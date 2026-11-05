@@ -90,6 +90,19 @@
         </div>
 
         <!-- 결과 -->
+        <!-- 안내(얼굴을 못 찾았을 때 등) — 사라지지 않고 계속 보입니다 -->
+        <div class="notice card hidden" id="notice">
+          <canvas id="noticePhoto"></canvas>
+          <div>
+            <h3 id="noticeTitle">얼굴을 찾지 못했어요</h3>
+            <p id="noticeText"></p>
+            <div class="cta-row">
+              <button class="btn btn-primary" id="noticeCamera">📸 다시 찍기</button>
+              <label class="btn btn-ghost" for="fileInput">🖼️ 다른 사진 불러오기</label>
+            </div>
+          </div>
+        </div>
+
         <div class="result hidden" id="result"></div>
       </section>
 
@@ -187,13 +200,18 @@
   <div class="modal hidden" id="camModal" role="dialog" aria-modal="true" aria-label="사진 촬영">
     <div class="cam-box">
       <video id="camVideo" playsinline autoplay muted></video>
-      <svg class="cam-guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><defs><mask id="m"><rect width="300" height="400" fill="#fff"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="#000"/></mask></defs><rect width="300" height="400" fill="rgba(10,6,30,.55)" mask="url(#m)"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="none" stroke="#ffd36e" stroke-width="3" stroke-dasharray="8 6"/></svg>
+      <svg class="cam-guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><defs><mask id="m"><rect width="300" height="400" fill="#fff"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="#000"/></mask></defs><rect width="300" height="400" fill="rgba(10,6,30,.55)" mask="url(#m)"/><ellipse id="camOval" cx="150" cy="190" rx="95" ry="128" fill="none" stroke="#ffd36e" stroke-width="4" stroke-dasharray="8 6"/></svg>
+      <canvas id="camPreview" class="cam-preview hidden"></canvas>
       <div class="cam-count" id="camCount"></div>
-      <p class="cam-hint">타원 안에 얼굴을 맞추고 정면을 봐 주세요</p>
-      <div class="cam-ctrl">
+      <p class="cam-status" id="camStatus">📷 카메라를 켜는 중이에요…</p>
+      <div class="cam-ctrl" id="camCtrlShoot">
         <button class="btn btn-ghost" id="camCancel">취소</button>
-        <button class="shutter" id="camShot" aria-label="촬영"></button>
+        <button class="shutter" id="camShot" aria-label="촬영" disabled></button>
         <button class="btn btn-ghost" id="camFlip">🔄 전환</button>
+      </div>
+      <div class="cam-ctrl hidden" id="camCtrlConfirm">
+        <button class="btn btn-ghost" id="camRetake">↩️ 다시 찍기</button>
+        <button class="btn btn-primary" id="camUse">✅ 이 사진으로 보기</button>
       </div>
     </div>
   </div>
