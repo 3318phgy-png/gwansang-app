@@ -387,6 +387,16 @@ button { font-family: inherit; cursor: pointer; }
 @media (max-width: 760px) { .notice { grid-template-columns: minmax(0, 1fr); } .notice canvas { max-width: 220px; margin: 0 auto; } }
 .cam-ctrl .btn-ghost { background: rgba(0, 0, 0, 0.6); color: #fff; border: 2px solid rgba(255, 255, 255, 0.7); }
 
+/* ── 성별 묻기 창 ───────── */
+.gender-box { max-width: 420px; width: 100%; text-align: center; }
+.gender-box h3 { margin: 0 0 8px; font-size: 21px; }
+.gender-box p { margin: 0 0 16px; color: var(--ink2); }
+.gender-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.btn-big-g { flex-direction: column; font-size: 44px; padding: 18px 10px; border-radius: 20px; background: var(--bg2); border: 2px solid var(--line); }
+.btn-big-g span { font-size: 19px; font-weight: 900; }
+.btn-big-g:hover { border-color: var(--violet); }
+.match-toggle { display: flex; gap: 6px; flex-wrap: wrap; margin: -4px 0 12px; }
+
 /* ── 나이 · 성별 선택 ───────── */
 .profile-picker { border: 2px solid color-mix(in srgb, var(--violet) 35%, transparent); }
 .pp-row { display: flex; align-items: center; gap: 10px; margin-top: 8px; }

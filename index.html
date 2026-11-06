@@ -53,7 +53,7 @@
             <p class="lead">랜덤 운세 아니고요, 진짜 <b>내 얼굴</b>을 478개 지점으로 실측해서 눈썹·눈·코·입·턱의 비율로 관상을 풀어요. 사진은 기기 밖으로 나가지 않아요.</p>
             <div class="cta-row">
               <button class="btn btn-primary btn-xl" id="btnCamera">📸 지금 바로 촬영</button>
-              <label class="btn btn-ghost btn-xl" for="fileInput">🖼️ 사진 불러오기</label>
+              <label class="btn btn-ghost btn-xl pick-photo" for="fileInput">🖼️ 사진 불러오기</label>
               <input type="file" id="fileInput" accept="image/*" hidden />
             </div>
             <div class="drop-hint" id="dropZone">또는 여기로 사진을 끌어다 놓으세요</div>
@@ -110,7 +110,7 @@
             <p id="noticeText"></p>
             <div class="cta-row">
               <button class="btn btn-primary" id="noticeCamera">📸 다시 찍기</button>
-              <label class="btn btn-ghost" for="fileInput">🖼️ 다른 사진 불러오기</label>
+              <label class="btn btn-ghost pick-photo" for="fileInput">🖼️ 다른 사진 불러오기</label>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@
   <footer class="site-footer">
     <div class="wrap">
       <p><b>관상도사</b> · 마의상법 · 유장상법 · 신상전편 기반 재미용 관상 서비스</p>
-      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 6 (인물 38명)</p>
+      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 7 (성별 묻기 · 카메라 자동 찾기)</p>
     </div>
   </footer>
 
@@ -212,6 +212,19 @@
   <div class="ad-anchor" id="adAnchor">
     <div class="ad-slot ad-bottom" data-ad="bottom"></div>
     <button class="ad-close" id="adClose" aria-label="광고 닫기">×</button>
+  </div>
+
+  <!-- 성별 묻기 (처음 한 번) -->
+  <div class="modal hidden" id="genderModal" role="dialog" aria-modal="true" aria-label="성별 선택">
+    <div class="card gender-box">
+      <h3>관상을 보기 전에 하나만 여쭤볼게요</h3>
+      <p>성별을 알려 주시면 <b>같은 성별의 닮은 인물</b>을 찾아 드리고, 남성분께는 <b>그루밍 팁</b>을 드려요.</p>
+      <div class="gender-btns">
+        <button class="btn btn-big-g" data-pick="m">👨<span>남성</span></button>
+        <button class="btn btn-big-g" data-pick="f">👩<span>여성</span></button>
+      </div>
+      <button class="btn btn-ghost" data-pick="">선택하지 않고 볼래요</button>
+    </div>
   </div>
 
   <!-- 카메라 모달 -->

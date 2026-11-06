@@ -10,3 +10,24 @@
   for = "/*.wasm"
   [headers.values]
     Content-Type = "application/wasm"
+
+# 화면·글·코드 파일은 매번 새 버전인지 확인 (예전 버전이 남아 보이는 문제 방지)
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "no-cache"

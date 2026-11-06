@@ -91,7 +91,32 @@ function toCanvas(src, w, h, mirror = false, max = 1400) {
 
 // ───────────────────────── 카메라 ─────────────────────────
 // 흐름: 카메라 켜기 → (실시간으로 얼굴이 잘 보이는지 알려 줌) → 촬영 → 찍힌 사진 확인 → 관상 보기
-$("#btnCamera").addEventListener("click", openCamera);
+$("#btnCamera").addEventListener("click", () => ensureGender(openCamera));
+
+// 성별을 아직 안 고르셨으면 촬영·사진 불러오기 전에 한 번 여쭤봅니다.
+let genderAsked = false;
+function ensureGender(next) {
+  if (state.profile.gender || genderAsked) return next();
+  const m = $("#genderModal");
+  m.classList.remove("hidden");
+  $$("[data-pick]", m).forEach((b) => {
+    b.onclick = () => {
+      genderAsked = true;
+      if (b.dataset.pick) {
+        state.profile.gender = b.dataset.pick;
+        try { localStorage.setItem("gw_profile", JSON.stringify(state.profile)); } catch (e) { /* 무시 */ }
+        renderProfileChips();
+      }
+      m.classList.add("hidden");
+      next();
+    };
+  });
+}
+$$(".pick-photo").forEach((l) => l.addEventListener("click", (e) => {
+  if (state.profile.gender || genderAsked) return;
+  e.preventDefault();
+  ensureGender(() => $("#fileInput").click());
+}));
 $("#camCancel").addEventListener("click", closeCamera);
 $("#camFlip").addEventListener("click", () => {
   if (state.devices.length < 2) return camStatus("이 기기에서 찾은 카메라가 하나뿐이에요.", "");
@@ -175,7 +200,7 @@ async function startStream() {
   stopStream();
   $("#camShot").disabled = true;
   camStatus("wait");
-  state.darkCount = 0; state.goodCount = 0; state.noFaceCount = 0;
+  state.darkCount = 0; state.goodCount = 0; state.noFaceCount = 0; state.camHadFace = false;
   const size = { width: { ideal: 1280 }, height: { ideal: 960 } };
   const video = state.deviceId ? { deviceId: { exact: state.deviceId }, ...size } : { facingMode: "user", ...size };
   try {
@@ -250,8 +275,10 @@ async function liveCheck() {
       // 아이폰·가상 카메라처럼 얼굴이 안 보일 법한 카메라에서 4초 넘게 얼굴이 없으면 다음 카메라로
       state.noFaceCount = !r.ok && r.reason === "none" ? (state.noFaceCount || 0) + 1 : 0;
       const curLabel = (state.devices.find((d) => d.deviceId === state.curCamId) || {}).label;
-      if (state.noFaceCount >= 7 && !state.userPicked && camScore(curLabel) < 0 && switchToNextCam()) return;
-      if (r.ok) saveCam(state.curCamId);
+      const savedHere = state.curCamId && state.curCamId === loadSavedCam();
+      if (state.noFaceCount >= (camScore(curLabel) < 0 ? 4 : 5) && !state.userPicked && !state.camHadFace && !savedHere
+          && switchToNextCam("🔄 이 카메라에는 얼굴이 안 보여서 다른 카메라로 바꿔 볼게요…")) return;
+      if (r.ok) { state.camHadFace = true; saveCam(state.curCamId); }
       if (state.darkCount >= 4) {
         camStatus(state.devices.length > 1
           ? `⬛ 카메라 화면이 까매요. 아래 '카메라 바꾸기'를 눌러 보세요. (이 컴퓨터에 카메라가 ${state.devices.length}개 있어요)`
@@ -534,6 +561,10 @@ function renderResult(scroll) {
 
     <div class="card reveal">
       <h3 class="block-title">🌏 나와 닮은 관상의 인물</h3>
+      <div class="match-toggle">
+        <button class="chip ${R.gender === "m" ? "active" : ""}" data-mg="m">👨 남성 인물 중에서</button>
+        <button class="chip ${R.gender === "f" ? "active" : ""}" data-mg="f">👩 여성 인물 중에서</button>
+      </div>
       <div class="match-grid">${R.figures.map(({ fig, pct }) => `
         <div class="match"><div class="av" style="background:${fig.color}">${fig.emoji}</div><b>${fig.name}</b><div class="pct">${pct}%</div><p>${FACE_SHAPES[fig.shape].alias} · ${fig.parts[0]}</p></div>`).join("")}</div>
       <p class="note">${R.gender ? `같은 성별(${R.gender === "m" ? "남성" : "여성"})의 인물 중에서 골랐어요. ` : "위에서 성별을 고르면 같은 성별의 인물 중에서 골라 드려요. "}얼굴 비율의 '관상학적 경향'이 얼마나 비슷한지 비교한 재미용 매칭이에요. <a href="#figures" data-goto="figures">인물 관상 전체 보기 →</a></p>
@@ -563,6 +594,14 @@ function renderResult(scroll) {
     drawOverlay($("#resCanvas"), state.photo, A.landmarks, state.layer);
   }));
   $("[data-goto]", el).addEventListener("click", (e) => { e.preventDefault(); showTab("figures"); });
+  $$("[data-mg]", el).forEach((b) => b.addEventListener("click", () => {
+    state.profile.gender = b.dataset.mg;
+    try { localStorage.setItem("gw_profile", JSON.stringify(state.profile)); } catch (e) { /* 무시 */ }
+    renderProfileChips();
+    state.reading = buildReading(state.analysis, state.ear, state.profile);
+    const y = window.scrollY; renderResult(false); window.scrollTo(0, y);
+    toast(b.dataset.mg === "m" ? "👨 남성 인물 중에서 다시 찾았어요" : "👩 여성 인물 중에서 다시 찾았어요");
+  }));
   $("#btnSave").addEventListener("click", saveImage);
   $("#btnShare").addEventListener("click", shareResult);
   $("#btnCopy").addEventListener("click", copyText);
