@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://gwansang-dosa.netlify.app/sitemap.xml
