@@ -5,6 +5,7 @@
 import {
   FACE_SHAPES, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, HOOKS, METRIC_LABELS, FIVE_ORGANS,
+  AGE_GROUPS, AGE_LINES, GROOMING_TIPS, GENDERS,
 } from "./content.js";
 import { FIGURES } from "./figures.js";
 
@@ -28,7 +29,12 @@ export function faceShapeOf(z) {
   return "balance";
 }
 
-export function buildReading(analysis, earKey = "auto") {
+// profile: { gender: "" | "f" | "m", age: "" | "20" | "30" | "40" | "50" | "60" }
+export function buildReading(analysis, earKey = "auto", profile = {}) {
+  const gender = profile.gender || "";
+  const ageKey = profile.age || "";
+  const ageInfo = AGE_GROUPS[ageKey] || AGE_GROUPS[""];
+  const stage = ageInfo.stage || "";
   const z = { ...analysis.z };
   const m = analysis.metrics;
   const seed = hashOf(Object.values(m).map((v) => +v.toFixed(3)));
@@ -53,7 +59,10 @@ export function buildReading(analysis, earKey = "auto") {
     }
     const jitter = ((seed >> (i * 3)) % 5) - 2; // 사진마다 고정된 ±2 개성치
     const score = Math.round(clamp(76 + (sum / wsum) * 14 + jitter, 62, 98));
-    return { ...f, score, contrib, text: fortuneText(f, score, contrib, seed + i) };
+    const name = f.id === "career" && ageInfo.career ? ageInfo.career
+      : f.id === "children" && ageInfo.children ? ageInfo.children : f.name;
+    const ff = { ...f, name };
+    return { ...ff, score, contrib, text: fortuneText(ff, score, contrib, seed + i, { stage, gender }) };
   });
 
   const ranked = [...fortunes].sort((a, b) => b.score - a.score);
@@ -89,15 +98,23 @@ export function buildReading(analysis, earKey = "auto") {
     .filter(([k]) => METRIC_LABELS[k] && !["middle", "eyeSize", "faceRatio"].includes(k))
     .sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => METRIC_LABELS[k]);
   const sanjeong = sanjeongText(z);
+  let ageText = "";
+  if (ageInfo.keys) {
+    const az = ageInfo.keys.reduce((a, k) => a + (z[k] ?? 0), 0) / ageInfo.keys.length;
+    const who = `${ageInfo.label}${gender ? " " + GENDERS[gender] : ""}`;
+    ageText = `특히 지금 ${who}이신 당신은, 마의상법의 '유년운기(流年運氣)'로 보면 운이 '${ageInfo.place}'에 머무는 시기(${ageInfo.years})예요. ${ageInfo[level(az)]} `;
+  }
   const summary =
     `${shape.emoji} 당신의 얼굴은 ${shape.alias}, 신상전편으로 치면 '${shape.name}'입니다. ${shape.text} ` +
     `실제 측정에서 가장 돋보인 부위는 '${strongParts[0]}'와(과) '${strongParts[1]}'였어요. ` +
-    `${sanjeong} ` +
+    `${sanjeong} ` + ageText +
     `그래서 8가지 운 중 ${best.emoji}${best.name}(${best.score}점)과 ${second.emoji}${second.name}(${second.score}점)이 특히 강하게 나왔습니다. ` +
     `유장상법은 '얼굴은 마음 따라 변한다'고 했어요. 지금의 좋은 기운을 살리고 아쉬운 곳은 표정과 습관으로 채우면, 관상은 얼마든지 더 좋아질 수 있답니다.`;
 
   return {
     seed, z, shapeKey, shape, fortunes, ranked, total, parts, hook, summary,
+    profileLabel: [ageInfo.keys ? ageInfo.label : "", gender ? GENDERS[gender] : ""].filter(Boolean).join(" · "),
+    tipLabel: gender === "m" ? "💈 그루밍 · 인상 팁" : "💄 메이크업 · 인상 팁",
     figures: matchFigures(z),
     metricsView: metricsView(z, m),
   };
@@ -111,7 +128,7 @@ function sanjeongText(z) {
   return `삼정(三停) 중에서는 ${top[0]}이 가장 발달해, ${when} 흐름을 가졌어요.`;
 }
 
-function fortuneText(f, score, contrib, seed) {
+function fortuneText(f, score, contrib, seed, opt = {}) {
   const tier = score >= 88 ? "top" : score >= 78 ? "good" : "hidden";
   const open = {
     top: `${f.emoji} ${f.name} ${score}점, 이건 자랑해도 되는 점수예요!`,
@@ -133,10 +150,11 @@ function fortuneText(f, score, contrib, seed) {
   }
 
   // 보완 포인트 → 메이크업/인상 팁
-  const weakest = [...contrib].filter((c) => MAKEUP_TIPS[c.k]).sort((a, b) => a.c - b.c)[0];
+  const TIPS = opt.gender === "m" ? GROOMING_TIPS : MAKEUP_TIPS;
+  const weakest = [...contrib].filter((c) => TIPS[c.k]).sort((a, b) => a.c - b.c)[0];
   let makeup = "";
   if (weakest) {
-    const t = MAKEUP_TIPS[weakest.k];
+    const t = TIPS[weakest.k];
     makeup = weakest.z < 0 ? t.lo : t.hi;
   }
 
@@ -146,7 +164,8 @@ function fortuneText(f, score, contrib, seed) {
     hidden: "관상에서 점수가 조금 낮다는 건 '변화의 여지가 크다'는 뜻이에요. 표정과 습관으로 가장 크게 운을 바꿀 수 있는 분야랍니다.",
   }[tier];
 
-  let body = `${lines.join(" ")} ${close}`;
+  const ageLine = opt.stage && AGE_LINES[f.id] ? " " + AGE_LINES[f.id][opt.stage] : "";
+  let body = `${lines.join(" ")}${ageLine} ${close}`;
   if (body.length < 220) body += " " + f.classic;
   return { open, body, classic: f.classic, tip: f.tip, makeup, tier };
 }

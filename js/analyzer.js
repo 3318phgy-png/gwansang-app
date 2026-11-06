@@ -37,6 +37,7 @@ export async function quickCheck(canvas) {
   for (const p of pts) { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); y0 = Math.min(y0, p.y); y1 = Math.max(y1, p.y); }
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
   if (y1 - y0 < 0.28) return { ok: false, reason: "small", bright };
+  if (y1 - y0 > 0.8) return { ok: false, reason: "big", bright };
   if (Math.abs(cx - 0.5) > 0.2 || Math.abs(cy - 0.48) > 0.22) return { ok: false, reason: "off", bright };
   if (bright < 45) return { ok: true, reason: "dark", bright };
   return { ok: true, reason: "good", bright };

@@ -6,7 +6,7 @@ import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
 import { buildReading, level } from "./reading.js";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
-  EAR_TYPES, FACE_SHAPES, METRIC_LABELS,
+  EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
 } from "./content.js";
 import { FIGURES } from "./figures.js";
 import { fillAds } from "./ads.js";
@@ -36,13 +36,29 @@ function toast(msg, ms = 3000) {
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.add("hidden"), ms);
 }
 
+// ───────────────────────── 나이 · 성별 선택 ─────────────────────────
+state.profile = { age: "", gender: "" };
+try { Object.assign(state.profile, JSON.parse(localStorage.getItem("gw_profile") || "{}")); } catch (e) { /* 저장소 사용 불가 */ }
+function renderProfileChips() {
+  const order = ["20", "30", "40", "50", "60", ""];
+  $("#ageChips").innerHTML = order.map((k) => `<button class="chip ${state.profile.age === k ? "active" : ""}" data-age="${k}">${AGE_GROUPS[k].label}</button>`).join("");
+  $("#genderChips").innerHTML = ["f", "m", ""].map((k) => `<button class="chip ${state.profile.gender === k ? "active" : ""}" data-gender="${k}">${GENDERS[k]}</button>`).join("");
+  const changed = () => {
+    try { localStorage.setItem("gw_profile", JSON.stringify(state.profile)); } catch (e) { /* 무시 */ }
+    renderProfileChips();
+    if (state.analysis) { state.reading = buildReading(state.analysis, state.ear, state.profile); renderResult(false); toast("👤 나이·성별에 맞춰 다시 풀이했어요"); }
+  };
+  $$("#ageChips .chip").forEach((c) => c.addEventListener("click", () => { state.profile.age = c.dataset.age; changed(); }));
+  $$("#genderChips .chip").forEach((c) => c.addEventListener("click", () => { state.profile.gender = c.dataset.gender; changed(); }));
+}
+
 // ───────────────────────── 귀 선택 ─────────────────────────
 function renderEarChips() {
   $("#earChips").innerHTML = Object.entries(EAR_TYPES)
     .map(([k, v]) => `<button class="chip ${k === state.ear ? "active" : ""}" data-ear="${k}">${v.label}</button>`).join("");
   $$("#earChips .chip").forEach((c) => c.addEventListener("click", () => {
     state.ear = c.dataset.ear; renderEarChips();
-    if (state.analysis) { state.reading = buildReading(state.analysis, state.ear); renderResult(false); toast("👂 귀 정보를 반영해 다시 풀이했어요"); }
+    if (state.analysis) { state.reading = buildReading(state.analysis, state.ear, state.profile); renderResult(false); toast("👂 귀 정보를 반영해 다시 풀이했어요"); }
   }));
 }
 
@@ -94,7 +110,8 @@ const CAM_MSG = {
   dark: ["💡 화면이 너무 어두워요. 밝은 곳으로 가거나 불을 켜 주세요.", "bad"],
   small: ["🔍 얼굴이 너무 작아요. 화면에 조금 더 가까이 와 주세요.", "bad"],
   off: ["↔️ 얼굴을 노란 타원 가운데로 맞춰 주세요.", "bad"],
-  good: ["✅ 얼굴이 잘 보여요! 가운데 빨간 버튼을 눌러 주세요.", "ok"],
+  good: ["✅ 좋아요! 그대로 가만히 계세요. 곧 자동으로 찍어요.", "ok"],
+  big: ["↩️ 얼굴이 너무 가까워요. 조금만 뒤로 가 주세요.", "bad"],
 };
 // key가 CAM_MSG에 있으면 그 문구, 없으면 key 자체를 문구로 사용. cls로 색을 지정할 수 있음.
 function camStatus(key, cls) {
@@ -121,12 +138,16 @@ function showShootMode() {
   $("#camCtrlShoot").classList.remove("hidden");
   $("#camCtrlConfirm").classList.add("hidden");
   $("#camUse").classList.remove("hidden");
+  $("#camUse").textContent = "✅ 이 사진으로 보기";
+  clearTimeout(state.goTimer);
+  state.goodCount = 0;
+  const bar = $("#camAutoBar"); if (bar) bar.style.width = "0";
 }
 async function startStream() {
   stopStream();
   $("#camShot").disabled = true;
   camStatus("wait");
-  state.darkCount = 0;
+  state.darkCount = 0; state.goodCount = 0;
   const size = { width: { ideal: 1280 }, height: { ideal: 960 } };
   const video = state.deviceId ? { deviceId: { exact: state.deviceId }, ...size } : { facingMode: "user", ...size };
   try {
@@ -171,7 +192,7 @@ function stopStream() {
   state.stream?.getTracks().forEach((t) => t.stop()); state.stream = null;
   clearTimeout(state.liveTimer);
 }
-function closeCamera() { stopStream(); $("#camModal").classList.add("hidden"); $("#camCount").textContent = ""; counting = false; }
+function closeCamera() { clearTimeout(state.goTimer); stopStream(); $("#camModal").classList.add("hidden"); $("#camCount").textContent = ""; counting = false; }
 
 // 0.6초마다 카메라 화면을 살펴서 얼굴이 잘 보이는지 알려 줍니다.
 async function liveCheck() {
@@ -190,6 +211,10 @@ async function liveCheck() {
           ? `⬛ 카메라 화면이 까매요. 아래 '카메라 바꾸기'를 눌러 보세요. (이 컴퓨터에 카메라가 ${state.devices.length}개 있어요)`
           : "⬛ 카메라 화면이 까매요. 카메라 가리개가 닫혀 있거나, 줌·페이스타임 같은 다른 프로그램이 카메라를 쓰고 있을 수 있어요. 그 프로그램을 닫고 '취소' 후 다시 눌러 주세요.", "bad");
       } else camStatus(r.ok ? (r.reason === "dark" ? "dark" : "good") : r.reason);
+      // 얼굴이 잘 보이는 상태가 약 2초 이어지면 자동으로 촬영
+      state.goodCount = r.ok && r.reason === "good" ? (state.goodCount || 0) + 1 : 0;
+      $("#camAutoBar").style.width = Math.min(100, state.goodCount / 3 * 100) + "%";
+      if (state.goodCount >= 3) { state.goodCount = 0; $("#camAutoBar").style.width = "0"; countdownShot(); return; }
     } catch (e) { camStatus("📷 카메라 준비 완료! 얼굴을 노란 타원 안에 맞춰 주세요.", ""); }
   }
   state.liveTimer = setTimeout(liveCheck, 600);
@@ -200,7 +225,7 @@ async function countdownShot() {
   if (counting || !state.stream) return; counting = true;
   const el = $("#camCount");
   camStatus("😊 움직이지 마세요! 곧 찍습니다", "");
-  for (const n of [3, 2, 1]) { el.textContent = n; await sleep(800); if (!state.stream) { counting = false; el.textContent = ""; return; } }
+  for (const n of [3, 2, 1]) { el.textContent = n; await sleep(650); if (!state.stream) { counting = false; el.textContent = ""; return; } }
   el.textContent = "";
   const v = $("#camVideo");
   const flash = document.createElement("div"); flash.className = "flash"; document.body.appendChild(flash); setTimeout(() => flash.remove(), 500);
@@ -220,7 +245,8 @@ async function countdownShot() {
     if (r.ok) {
       camStatus(r.reason === "dark"
         ? "📸 찍혔어요! 조금 어둡지만 볼 수 있어요. 아래 초록 버튼 '이 사진으로 보기'를 눌러 주세요."
-        : "📸 잘 찍혔어요! 아래 초록 버튼 '이 사진으로 보기'를 눌러 주세요.", "ok");
+        : "📸 잘 찍혔어요! 잠시 뒤 자동으로 관상을 봅니다.", "ok");
+      autoGo();
     } else {
       const why = { dark: " (너무 어두워요)", small: " (얼굴이 너무 작아요)", off: " (얼굴이 가운데가 아니에요)" }[r.reason] || "";
       camStatus("😢 이 사진에서는 얼굴이 잘 안 보여요" + why + ". '다시 찍기'를 눌러 주세요.", "bad");
@@ -228,7 +254,20 @@ async function countdownShot() {
     }
   } catch (e) { camStatus("📸 찍혔어요! 사진이 괜찮으면 '이 사진으로 보기'를 눌러 주세요.", ""); }
 }
+function autoGo() {
+  clearTimeout(state.goTimer);
+  let n = 3;
+  const btn = $("#camUse");
+  const tick = () => {
+    if (!state.shot || $("#camModal").classList.contains("hidden")) return;
+    if (n === 0) { btn.click(); return; }
+    btn.textContent = `✅ ${n}초 뒤 관상 보기 (바로 보기)`;
+    n--; state.goTimer = setTimeout(tick, 1000);
+  };
+  tick();
+}
 async function retake() {
+  clearTimeout(state.goTimer);
   showShootMode();
   if (!state.stream) await startStream(); else { camStatus("wait"); liveCheck(); }
 }
@@ -276,7 +315,7 @@ async function runAnalysis(canvas) {
     drawOverlay(sc, canvas, result.landmarks, "mesh", false);
     await sleep(600);
     state.analysis = result;
-    state.reading = buildReading(result, state.ear);
+    state.reading = buildReading(result, state.ear, state.profile);
     box.classList.add("hidden");
     renderResult(true);
     if (result.quality.yaw > 0.12) toast("📐 고개가 조금 돌아가 있어요. 정면 사진이면 더 정확해요!", 6000);
@@ -396,7 +435,7 @@ function renderResult(scroll) {
       <div class="fbox">
         <div><b>📜 고전은 이렇게 말해요</b>${esc(f.text.classic)}</div>
         <div><b>🍀 개운 포인트</b>${esc(f.text.tip)}</div>
-        <div><b>💄 메이크업 · 인상 팁</b>${esc(f.text.makeup || MAKEUP_TIPS.smile.hi)}</div>
+        <div><b>${R.tipLabel}</b>${esc(f.text.makeup || MAKEUP_TIPS.smile.hi)}</div>
       </div>
     </article>${i === 3 ? `<div class="ad-slot ad-infeed" data-ad="infeed"></div>` : ""}`).join("");
 
@@ -413,7 +452,7 @@ function renderResult(scroll) {
       <div class="card hook-card reveal">
         <p class="eyebrow" style="color:#ffc94d">관상도사의 첫마디</p>
         <p class="hook-line">“${esc(R.hook)}”</p>
-        <span class="shape-badge">${R.shape.emoji} ${R.shape.alias} · ${R.shape.name}</span>
+        <span class="shape-badge">${R.shape.emoji} ${R.shape.alias} · ${R.shape.name}</span>${R.profileLabel ? `<span class="profile-tag">👤 ${esc(R.profileLabel)}</span>` : ""}
         <div class="total">${ring(R.total)}<div><b style="font-size:18px">관상 종합 ${R.total}점</b><p>8가지 운의 평균이에요. 가장 강한 운은 <b>${R.ranked[0].name}</b>!</p></div></div>
         <div class="mini-bars">${R.fortunes.map((f) => `<div class="mini-bar"><span>${f.emoji} ${f.name}<b>${f.score}</b></span><i><b style="width:${f.score}%;background:${f.color}"></b></i></div>`).join("")}</div>
       </div>
@@ -526,7 +565,7 @@ async function buildShareCanvas() {
   const rx = 560;
   ctx.fillStyle = "#fff"; ctx.font = '700 34px "Noto Sans KR", sans-serif';
   ctx.fillText(`${R.shape.emoji} ${R.shape.alias}`, rx, 220);
-  ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = '500 26px "Noto Sans KR", sans-serif'; ctx.fillText(R.shape.name, rx, 260);
+  ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.font = '500 26px "Noto Sans KR", sans-serif'; ctx.fillText(R.shape.name + (R.profileLabel ? " · " + R.profileLabel : ""), rx, 260);
   ctx.fillStyle = "#ffc94d"; ctx.font = '400 150px "Black Han Sans", sans-serif'; ctx.fillText(String(R.total), rx, 420);
   ctx.fillStyle = "#fff"; ctx.font = '700 30px "Noto Sans KR", sans-serif'; ctx.fillText("관상 종합 점수", rx + 4, 470);
 
@@ -686,6 +725,7 @@ $("#todayWord").textContent = WORDS[new Date().getDate() % WORDS.length];
 $("#adClose").addEventListener("click", () => $("#adAnchor").remove());
 
 // ───────────────────────── 시작 ─────────────────────────
+renderProfileChips();
 renderEarChips();
 renderPartsTab();
 renderFortuneTab();

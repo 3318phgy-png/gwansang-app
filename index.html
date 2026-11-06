@@ -75,6 +75,12 @@
           </div>
         </div>
 
+        <div class="ear-picker card profile-picker">
+          <div class="ear-head"><b>👤 나에게 맞춘 풀이</b><span>나이대와 성별을 고르면 그 시기에 맞춰 풀어 드려요 (선택)</span></div>
+          <div class="pp-row"><em>나이</em><div class="chips" id="ageChips"></div></div>
+          <div class="pp-row"><em>성별</em><div class="chips" id="genderChips"></div></div>
+        </div>
+
         <div class="ear-picker card">
           <div class="ear-head"><b>👂 귀 모양 (선택)</b><span>정면 사진에선 귀가 잘 안 보여요. 아시면 골라 주세요!</span></div>
           <div class="chips" id="earChips"></div>
@@ -192,7 +198,7 @@
   <footer class="site-footer">
     <div class="wrap">
       <p><b>관상도사</b> · 마의상법 · 유장상법 · 신상전편 기반 재미용 관상 서비스</p>
-      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 3.1 (GitHub 자동 반영)</p>
+      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 4 (나이·성별 맞춤 · 자동 촬영)</p>
     </div>
   </footer>
 
@@ -208,6 +214,7 @@
       <video id="camVideo" playsinline autoplay muted></video>
       <svg class="cam-guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><defs><mask id="m"><rect width="300" height="400" fill="#fff"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="#000"/></mask></defs><rect width="300" height="400" fill="rgba(10,6,30,.55)" mask="url(#m)"/><ellipse id="camOval" cx="150" cy="190" rx="95" ry="128" fill="none" stroke="#ffd36e" stroke-width="4" stroke-dasharray="8 6"/></svg>
       <canvas id="camPreview" class="cam-preview hidden"></canvas>
+      <div class="cam-autobar" id="camAutoBar"></div>
       <div class="cam-count" id="camCount"></div>
       <p class="cam-status" id="camStatus">📷 카메라를 켜는 중이에요…</p>
       <div class="cam-ctrl" id="camCtrlShoot">
