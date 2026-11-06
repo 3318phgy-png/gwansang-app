@@ -115,7 +115,8 @@ export function buildReading(analysis, earKey = "auto", profile = {}) {
     seed, z, shapeKey, shape, fortunes, ranked, total, parts, hook, summary,
     profileLabel: [ageInfo.keys ? ageInfo.label : "", gender ? GENDERS[gender] : ""].filter(Boolean).join(" · "),
     tipLabel: gender === "m" ? "💈 그루밍 · 인상 팁" : "💄 메이크업 · 인상 팁",
-    figures: matchFigures(z),
+    figures: matchFigures(z, gender),
+    gender,
     metricsView: metricsView(z, m),
   };
 }
@@ -179,8 +180,9 @@ function metricsView(z, m) {
   }));
 }
 
-export function matchFigures(z) {
-  return FIGURES.map((f) => {
+// gender가 정해지면 같은 성별의 인물끼리만 비교합니다.
+export function matchFigures(z, gender = "") {
+  return FIGURES.filter((f) => !gender || f.gender === gender).map((f) => {
     const keys = Object.keys(f.profile);
     let s = 0;
     for (const k of keys) s += 1 - Math.min(1, Math.abs((z[k] ?? 0) - f.profile[k]) / 3.5);
