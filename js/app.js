@@ -726,8 +726,10 @@ function renderFortuneTab() {
 }
 
 // ───────────────────────── 정적 탭: 인물 관상 ─────────────────────────
-function renderFigures(filter = "all") {
-  const list = FIGURES.filter((f) => filter === "all" || f.region === filter);
+const figSel = { region: "all", gender: "" };
+function renderFigures() {
+  const list = FIGURES.filter((f) => (figSel.region === "all" || f.region === figSel.region) && (!figSel.gender || f.gender === figSel.gender));
+  $("#figCount").textContent = `${list.length}명`;
   $("#figGrid").innerHTML = list.map((f) => `
     <article class="card fig">
       <div class="fig-head"><div class="av" style="background:${f.color}22">${f.emoji}</div>
@@ -744,7 +746,10 @@ function renderFigures(filter = "all") {
   }));
 }
 $$("#figFilter .chip").forEach((c) => c.addEventListener("click", () => {
-  $$("#figFilter .chip").forEach((x) => x.classList.toggle("active", x === c)); renderFigures(c.dataset.f);
+  $$("#figFilter .chip").forEach((x) => x.classList.toggle("active", x === c)); figSel.region = c.dataset.f; renderFigures();
+}));
+$$("#figGender .chip").forEach((c) => c.addEventListener("click", () => {
+  $$("#figGender .chip").forEach((x) => x.classList.toggle("active", x === c)); figSel.gender = c.dataset.g; renderFigures();
 }));
 
 // ───────────────────────── 정적 탭: 3대 고전 ─────────────────────────
