@@ -154,7 +154,15 @@ function camScore(label = "") {
   const l = label.toLowerCase();
   if (/iphone|continuity|desk view|데스크 뷰|virtual|obs|snap|camo|ndi|manycam|screen/.test(l)) return -3;
   if (/facetime|macbook|imac|studio display|built-in|builtin|integrated|내장|front|전면|user/.test(l)) return 3;
+  if (/back|rear|후면|environment/.test(l)) return -1; // 휴대폰 뒷면 카메라(초광각·망원 포함)
   return 0;
+}
+// 휴대폰의 기술적인 카메라 이름(예: camera2 1, facing front)을 알기 쉬운 이름으로
+function friendlyCamName(label) {
+  const l = label.toLowerCase();
+  if (/facing front|front camera|^front/.test(l)) return "앞면 카메라";
+  if (/facing back|back camera|rear|^back/.test(l)) return "뒷면 카메라";
+  return label;
 }
 function loadSavedCam() { try { return localStorage.getItem("gw_cam") || null; } catch (e) { return null; } }
 function saveCam(id) { try { if (id) localStorage.setItem("gw_cam", id); } catch (e) { /* 무시 */ } }
@@ -208,7 +216,10 @@ async function pickInitialCam() {
     const ok = devs.find((d) => camScore(d.label) >= 0);
     if (ok) return ok.deviceId;
   } else if (saved && devs.some((d) => d.deviceId === saved)) return saved;
-  // 이름을 알 수 없으면, 목록의 첫 번째(대개 내장 카메라)부터
+  // 이름을 알 수 없을 때: 휴대폰은 '앞면 카메라'를 달라고 하고(목록 첫 번째가 뒷면인 경우가 많음),
+  // 컴퓨터는 목록의 첫 번째(대개 내장 카메라)부터
+  const isPhone = /iphone|ipad|android|mobile/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /macintosh/i.test(navigator.userAgent));
+  if (isPhone) return null;
   return devs.length > 1 ? devs[0].deviceId : null;
 }
 function showShootMode() {
@@ -245,9 +256,10 @@ async function startStream() {
       state.devices = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput");
       state.devIdx = Math.max(0, state.devices.findIndex((d) => d.deviceId === set.deviceId));
     } catch (e2) { state.devices = []; }
-    $("#camFlip").textContent = state.devices.length > 1 ? `🔄 카메라 바꾸기 (${state.devIdx + 1}/${state.devices.length})` : "🔄 카메라 바꾸기";
+    const flipWord = window.innerWidth < 480 ? "🔄 바꾸기" : "🔄 카메라 바꾸기";
+    $("#camFlip").textContent = state.devices.length > 1 ? `${flipWord} (${state.devIdx + 1}/${state.devices.length})` : flipWord;
     state.curCamId = set.deviceId || "";
-    { const d = state.devices.find((x) => x.deviceId === state.curCamId); $("#camName").textContent = d && d.label ? "📷 " + d.label : ""; }
+    { const d = state.devices.find((x) => x.deviceId === state.curCamId); $("#camName").textContent = d && d.label ? "📷 " + friendlyCamName(d.label) : ""; }
     const cur = state.devices[state.devIdx];
     const best = [...state.devices].sort((a, b) => camScore(b.label) - camScore(a.label))[0];
     if (!state.userPicked && cur && best && best.deviceId !== cur.deviceId && camScore(best.label) > camScore(cur.label)

@@ -407,3 +407,12 @@ button { font-family: inherit; cursor: pointer; }
 .profile-tag { display: inline-block; margin-left: 6px; background: rgba(255, 201, 77, 0.22); color: #ffd36e; padding: 6px 12px; border-radius: 999px; font-weight: 700; }
 .cam-autobar { position: absolute; left: 0; bottom: 0; height: 6px; width: 0; background: #34e08a; z-index: 3; transition: width 0.6s linear; }
 .fig-count { align-self: center; margin-left: 6px; font-size: 13px; font-weight: 700; color: var(--ink2); }
+
+/* 작은 휴대폰 화면: 촬영 버튼들이 겹치지 않게 */
+@media (max-width: 480px) {
+  .cam-ctrl { bottom: 12px; padding: 0 8px; gap: 6px; }
+  .cam-ctrl .btn { font-size: 14px; padding: 10px 12px; }
+  .shutter { width: 64px; height: 64px; flex: none; }
+  .cam-name { bottom: 88px; }
+  .cam-status { font-size: 15px; padding: 8px 10px; }
+}
