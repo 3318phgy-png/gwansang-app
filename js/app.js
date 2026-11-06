@@ -1,26 +1,26 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=10";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=11";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js?v=10";
+import { buildReading, level } from "./reading.js?v=11";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js?v=10";
-import { FIGURES } from "./figures.js?v=10";
-import { fillAds } from "./ads.js?v=10";
+} from "./content.js?v=11";
+import { FIGURES } from "./figures.js?v=11";
+import { fillAds } from "./ads.js?v=11";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
-const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, mirror: true, devices: [], devIdx: 0, deviceId: null, darkCount: 0 };
+const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "portrait", stream: null, mirror: true, devices: [], devIdx: 0, deviceId: null, darkCount: 0 };
 
 // ───────────────────────── 자동 업데이트 ─────────────────────────
 // 사파리 탭을 오래 열어 두면 예전 앱이 계속 돌아갑니다.
 // 새 버전이 올라와 있으면 스스로 화면을 새로 불러와 최신 버전으로 바꿉니다.
-export const APP_VERSION = "10";
+export const APP_VERSION = "11";
 async function latestVersion() {
   try {
     const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
@@ -472,62 +472,106 @@ const PALACE_POINTS = {
   "관록궁": 151, "명궁": 9, "질액궁": 168, "재백궁": 4, "형제궁": 105, "전택궁": 223,
   "자녀궁": 230, "처첩궁": 446, "노복궁": 172, "천이궁": 54, "복덕궁": 333, "부모궁": 67,
 };
-function cropBox(lm, W, H) {
+function cropBox(lm, W, H, loose = true) {
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (const p of lm) { x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); }
-  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - (y1 - y0) * 0.05;
-  let h = (y1 - y0) * 1.55, w = h * 0.8;
-  if (w < (x1 - x0) * 1.4) { w = (x1 - x0) * 1.4; h = w / 0.8; }
+  const fh = y1 - y0, fw = x1 - x0;
+  // 초상화처럼: 머리카락부터 턱 아래까지 여유 있게 (4:5 비율)
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2 - fh * (loose ? 0.1 : 0.05);
+  let h = fh * (loose ? 2.0 : 1.55), w = h * 0.8;
+  if (w < fw * 1.7) { w = fw * 1.7; h = w / 0.8; }
+  w = Math.min(w, W); h = Math.min(h, H);
   let x = cx - w / 2, y = cy - h / 2;
   x = Math.max(0, Math.min(W - w, x)); y = Math.max(0, Math.min(H - h, y));
-  return { x, y, w: Math.min(w, W), h: Math.min(h, H) };
+  return { x, y, w, h };
 }
+
+// 사진을 '사진관 초상화'처럼: 살짝 밝고 따뜻하게, 부드러운 소프트 포커스, 가장자리는 은은하게 어둡게
+function paintPortrait(ctx, photo, b, W, H) {
+  ctx.save();
+  ctx.filter = "brightness(1.07) contrast(1.02) saturate(1.06)";
+  ctx.drawImage(photo, b.x, b.y, b.w, b.h, 0, 0, W, H);
+  // 소프트 포커스 (피부를 살짝 매끈하게)
+  ctx.globalAlpha = 0.22;
+  ctx.filter = `blur(${Math.round(W / 160)}px) brightness(1.08)`;
+  ctx.drawImage(photo, b.x, b.y, b.w, b.h, 0, 0, W, H);
+  ctx.restore();
+  // 따뜻한 빛
+  ctx.save();
+  ctx.globalCompositeOperation = "soft-light";
+  ctx.fillStyle = "rgba(255, 196, 140, 0.18)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+  // 비네팅 (가장자리 은은하게)
+  const g = ctx.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.5, Math.max(W, H) * 0.75);
+  g.addColorStop(0, "rgba(30, 18, 60, 0)");
+  g.addColorStop(1, "rgba(30, 18, 60, 0.45)");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+}
+
+const GOLD = "rgba(255, 222, 150, 0.9)";
 function drawOverlay(target, photo, lm, layer, crop = true) {
   const b = crop ? cropBox(lm, photo.width, photo.height) : { x: 0, y: 0, w: photo.width, h: photo.height };
   const scale = crop ? 900 / b.w : 1;
   target.width = Math.round(b.w * scale); target.height = Math.round(b.h * scale);
   const ctx = target.getContext("2d");
-  ctx.drawImage(photo, b.x, b.y, b.w, b.h, 0, 0, target.width, target.height);
+  const W = target.width, H = target.height;
+  if (crop) paintPortrait(ctx, photo, b, W, H);
+  else ctx.drawImage(photo, 0, 0);
   const P = (i) => ({ x: (lm[i].x - b.x) * scale, y: (lm[i].y - b.y) * scale });
-  const unit = target.width / 300;
-  if (layer === "none") return;
+  const unit = W / 300;
+  if (layer === "portrait" || layer === "none") return;
 
   if (layer === "mesh") {
-    ctx.lineWidth = 1.6 * unit; ctx.lineCap = "round";
-    const groups = [
-      [FaceLandmarker.FACE_LANDMARKS_FACE_OVAL, "rgba(255,255,255,.75)"],
-      [FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, "#ffc94d"], [FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW, "#ffc94d"],
-      [FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, "#4ad6ff"], [FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, "#4ad6ff"],
-      [FaceLandmarker.FACE_LANDMARKS_LIPS, "#ff6b8b"],
-    ];
-    for (const [conns, color] of groups) {
-      ctx.strokeStyle = color; ctx.beginPath();
+    ctx.save();
+    ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 2 * unit;
+    // 얼굴 윤곽: 아주 옅은 점선
+    ctx.setLineDash([1.5 * unit, 3 * unit]); ctx.lineWidth = 0.9 * unit; ctx.strokeStyle = "rgba(255,255,255,.35)";
+    ctx.beginPath();
+    for (const c of FaceLandmarker.FACE_LANDMARKS_FACE_OVAL) { const a = P(c.start), e = P(c.end); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); }
+    ctx.stroke(); ctx.setLineDash([]);
+    // 눈썹 · 눈 · 입: 가는 금빛 선
+    ctx.lineWidth = 1.1 * unit; ctx.strokeStyle = GOLD;
+    for (const conns of [FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
+      FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, FaceLandmarker.FACE_LANDMARKS_LIPS]) {
+      ctx.beginPath();
       for (const c of conns) { const a = P(c.start), e = P(c.end); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); }
       ctx.stroke();
     }
-    ctx.strokeStyle = "#7cf2b0"; ctx.beginPath();
-    [168, 6, 197, 195, 5, 4, 1].forEach((i, k) => { const p = P(i); k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
-    [129, 98, 2, 327, 358].forEach((i, k) => { const p = P(i); k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
+    // 코: 아주 옅게
+    ctx.strokeStyle = "rgba(255,222,150,.55)"; ctx.lineWidth = 0.9 * unit; ctx.beginPath();
+    [168, 6, 197, 195, 5, 4].forEach((i, k) => { const p = P(i); k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
     ctx.stroke();
-    // 삼정 가이드 라인
-    const L = P(234).x - 14 * unit, R = P(454).x + 14 * unit;
-    ctx.setLineDash([5 * unit, 4 * unit]); ctx.lineWidth = 1.2 * unit; ctx.strokeStyle = "rgba(255,201,77,.9)";
-    const lines = [[10, "상정"], [9, "중정"], [2, "하정"], [152, ""]];
-    ctx.font = `700 ${10 * unit}px "Noto Sans KR", sans-serif`;
-    lines.forEach(([i, label], k) => {
-      const y = P(i).y; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(R, y); ctx.stroke();
-      if (label) { const ny = P(lines[k + 1][0]).y; tag(ctx, label, R + 2 * unit, (y + ny) / 2, "#ffc94d", "#2b1d5c", unit, "left"); }
-    });
-    ctx.setLineDash([]);
+    // 측정한 자리: 작은 빛나는 점
+    ctx.shadowBlur = 4 * unit; ctx.shadowColor = "rgba(255,210,120,.9)";
+    for (const i of [70, 107, 336, 300, 33, 133, 362, 263, 129, 358, 61, 291, 0, 17, 152]) {
+      const p = P(i);
+      ctx.fillStyle = "#fff6dc"; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6 * unit, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    // 삼정: 얼굴 옆에 세로 눈금자 (얼굴을 가로지르지 않게)
+    const rx = Math.min(W - 40 * unit, P(454).x + 12 * unit);
+    const ys = [10, 9, 2, 152].map((i) => P(i).y);
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,222,150,.85)"; ctx.lineWidth = 1.2 * unit;
+    ctx.beginPath(); ctx.moveTo(rx, ys[0]); ctx.lineTo(rx, ys[3]); ctx.stroke();
+    ys.forEach((y) => { ctx.beginPath(); ctx.moveTo(rx - 4 * unit, y); ctx.lineTo(rx + 4 * unit, y); ctx.stroke(); });
+    ctx.font = `700 ${9 * unit}px "Gowun Batang", serif`;
+    ["상정", "중정", "하정"].forEach((label, k) => tag(ctx, label, rx + 6 * unit, (ys[k] + ys[k + 1]) / 2, "rgba(43,29,92,.72)", "#ffe3a3", unit, "left"));
+    ctx.restore();
   }
   if (layer === "palace") {
-    ctx.font = `700 ${9 * unit}px "Noto Sans KR", sans-serif`;
+    ctx.save();
+    ctx.font = `700 ${8.5 * unit}px "Gowun Batang", serif`;
     for (const [name, i] of Object.entries(PALACE_POINTS)) {
       const p = P(i);
-      ctx.fillStyle = "#ff6b8b"; ctx.beginPath(); ctx.arc(p.x, p.y, 3.2 * unit, 0, Math.PI * 2); ctx.fill();
-      ctx.strokeStyle = "#fff"; ctx.lineWidth = 1.2 * unit; ctx.stroke();
-      tag(ctx, name, p.x, p.y - 6 * unit, "rgba(43,29,92,.85)", "#fff", unit, "center", true);
+      ctx.shadowColor = "rgba(255,210,120,.9)"; ctx.shadowBlur = 4 * unit;
+      ctx.fillStyle = "#fff6dc"; ctx.beginPath(); ctx.arc(p.x, p.y, 2 * unit, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      tag(ctx, name, p.x, p.y - 4 * unit, "rgba(43,29,92,.62)", "#ffe3a3", unit, "center", true);
     }
+    ctx.restore();
   }
 }
 function tag(ctx, text, x, y, bg, fg, unit, align = "center", above = false) {
@@ -582,11 +626,12 @@ function renderResult(scroll) {
   el.innerHTML = `
     <div class="res-top">
       <div class="card photo-card reveal">
-        <canvas id="resCanvas"></canvas>
+        <div class="portrait-frame"><canvas id="resCanvas"></canvas><span class="corner tl">✦</span><span class="corner tr">✦</span></div>
+        <p class="portrait-caption">✦ 관상도사가 읽은 얼굴 ✦</p>
         <div class="layer-toggle">
-          <button class="chip ${state.layer === "mesh" ? "active" : ""}" data-layer="mesh">📐 실측 라인</button>
+          <button class="chip ${state.layer === "portrait" ? "active" : ""}" data-layer="portrait">✨ 초상화</button>
+          <button class="chip ${state.layer === "mesh" ? "active" : ""}" data-layer="mesh">📐 관상 실측</button>
           <button class="chip ${state.layer === "palace" ? "active" : ""}" data-layer="palace">🗺️ 십이궁</button>
-          <button class="chip ${state.layer === "none" ? "active" : ""}" data-layer="none">🙂 원본</button>
         </div>
       </div>
       <div class="card hook-card reveal">
@@ -703,10 +748,13 @@ async function buildShareCanvas() {
   ctx.globalAlpha = 0.07; ctx.fillStyle = "#fff"; ctx.font = '700 520px "Gowun Batang", serif'; ctx.fillText("相", 560, 1250); ctx.globalAlpha = 1;
 
   // 사진
-  const pc = document.createElement("canvas"); drawOverlay(pc, state.photo, A.landmarks, "mesh");
+  const pc = document.createElement("canvas"); drawOverlay(pc, state.photo, A.landmarks, "portrait");
   const pw = 440, ph = pw * (pc.height / pc.width), px = 70, py = 170;
-  ctx.save(); roundRect(ctx, px, py, pw, ph, 36); ctx.clip(); ctx.drawImage(pc, px, py, pw, ph); ctx.restore();
-  ctx.strokeStyle = "#ffc94d"; ctx.lineWidth = 6; roundRect(ctx, px, py, pw, ph, 36); ctx.stroke();
+  const arch = (x, y, w, h, r) => { ctx.beginPath(); ctx.moveTo(x, y + w / 2); ctx.arc(x + w / 2, y + w / 2, w / 2, Math.PI, 0); ctx.lineTo(x + w, y + h - r); ctx.arcTo(x + w, y + h, x + w - r, y + h, r); ctx.lineTo(x + r, y + h); ctx.arcTo(x, y + h, x, y + h - r, r); ctx.closePath(); };
+  ctx.save(); arch(px, py, pw, ph, 28); ctx.clip(); ctx.drawImage(pc, px, py, pw, ph); ctx.restore();
+  const gg = ctx.createLinearGradient(px, py, px + pw, py + ph); gg.addColorStop(0, "#fff1c4"); gg.addColorStop(0.5, "#e7b85a"); gg.addColorStop(1, "#fff1c4");
+  ctx.strokeStyle = gg; ctx.lineWidth = 8; arch(px, py, pw, ph, 28); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,241,196,.55)"; ctx.lineWidth = 2; arch(px - 12, py - 12, pw + 24, ph + 24, 36); ctx.stroke();
 
   ctx.fillStyle = "#ffc94d"; ctx.font = '400 64px "Black Han Sans", sans-serif'; ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
   ctx.fillText("관상도사", 70, 120);

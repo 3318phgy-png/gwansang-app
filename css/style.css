@@ -416,3 +416,24 @@ button { font-family: inherit; cursor: pointer; }
   .cam-name { bottom: 88px; }
   .cam-status { font-size: 15px; padding: 8px 10px; }
 }
+
+/* ── 결과 사진: 아치형 금빛 초상화 액자 ───────── */
+.photo-card { background: linear-gradient(170deg, #fffaf0, #f6eefe); text-align: center; padding: 22px 18px 16px; }
+.portrait-frame {
+  position: relative; display: block; padding: 7px;
+  border-radius: 999px 999px 26px 26px / 300px 300px 26px 26px;
+  background: linear-gradient(140deg, #fff1c4, #e7b85a 45%, #fff1c4 70%, #d9a441);
+  box-shadow: 0 14px 34px -14px rgba(120, 80, 20, 0.55), 0 0 0 1px rgba(231, 184, 90, 0.4);
+}
+.portrait-frame::after {
+  content: ""; position: absolute; inset: -9px; pointer-events: none;
+  border: 1.5px solid rgba(231, 184, 90, 0.55);
+  border-radius: 999px 999px 32px 32px / 310px 310px 32px 32px;
+}
+.photo-card .portrait-frame canvas { width: 100%; border-radius: 999px 999px 20px 20px / 293px 293px 20px 20px; }
+.portrait-frame .corner { position: absolute; bottom: 14px; color: #fff1c4; font-size: 16px; text-shadow: 0 0 8px rgba(255, 210, 120, 0.9); }
+.portrait-frame .corner.tl { left: 16px; } .portrait-frame .corner.tr { right: 16px; }
+.portrait-caption { margin: 14px 0 6px; font-family: var(--serif); font-weight: 700; color: #a8792a; letter-spacing: 2px; font-size: 15px; }
+.photo-card .layer-toggle { justify-content: center; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .photo-card { background: linear-gradient(170deg, #2b2140, #221a45); } }
+:root[data-theme="dark"] .photo-card { background: linear-gradient(170deg, #2b2140, #221a45); }
