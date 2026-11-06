@@ -1,0 +1,19 @@
+# Cloudflare Pages 설정 — 브라우저가 파일을 얼마나 오래 저장해 둘지 정합니다.
+
+# 얼굴 인식 엔진·모델: 바뀌지 않으니 오래 저장 (손님이 두 번째부터 빨리 열림)
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# 화면·코드·스타일: 매번 새 버전인지 확인 (예전 버전이 남아 보이는 문제 방지)
+/
+  Cache-Control: no-cache
+/*.html
+  Cache-Control: no-cache
+/js/*
+  Cache-Control: no-cache
+/css/*
+  Cache-Control: no-cache
+
+# 최신 버전 번호: 절대 저장하지 않음 (자동 업데이트 확인용)
+/version.json
+  Cache-Control: no-store

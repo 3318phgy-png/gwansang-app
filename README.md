@@ -27,8 +27,24 @@ cd gwansang-app
 python3 -m http.server 8080
 ```
 
-브라우저에서 `http://localhost:8080` 접속. 모바일 카메라는 **HTTPS**에서만 동작하므로 배포는
-Netlify / Vercel / GitHub Pages / Cloudflare Pages 등에 폴더째 올리면 됩니다.
+브라우저에서 `http://localhost:8080` 접속. 모바일 카메라는 **HTTPS**에서만 동작합니다.
+
+## 배포 (Cloudflare Pages)
+이 앱은 서버 코드가 없는 정적 사이트라 **Cloudflare Pages 무료 요금제**(정적 요청·대역폭 무제한)로 운영합니다.
+GitHub의 `main` 브랜치에 올리면 자동으로 다시 배포됩니다.
+
+| 설정 | 값 |
+|---|---|
+| 프로젝트 이름 | `gwansang-dosa` → 주소 `https://gwansang-dosa.pages.dev` |
+| Framework preset | None |
+| Build command | (비움) |
+| Build output directory | (비움) — 저장소 최상위 폴더를 그대로 배포 |
+
+- 캐시 설정은 `_headers` 파일에 있습니다. (`netlify.toml`은 예전 Netlify용)
+- 배포 후 `https://gwansang-dosa.pages.dev/version.json`의 숫자가 `js/app.js`의 `APP_VERSION`과 같은지 확인하세요.
+  앱은 이 숫자를 보고 오래 열린 탭도 스스로 새 버전으로 바꿉니다. 고칠 때마다 두 곳(+ `?v=` 번호)을 함께 올립니다.
+- 프로젝트 이름이 달라 주소가 바뀌면 `robots.txt`, `sitemap.xml`, 각 HTML의 `canonical` 주소를 함께 바꿉니다.
+- 구글 애드센스는 `pages.dev` 같은 하위 주소로는 신청할 수 없어 개인 도메인이 필요합니다.
 
 ## 광고 넣기
 `js/ads.js`의 `ADS_CONFIG`에 AdSense `client`(ca-pub-…)와 슬롯 ID를 넣으면 자동으로 광고가 채워집니다.
