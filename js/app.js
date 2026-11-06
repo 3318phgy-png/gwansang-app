@@ -153,7 +153,7 @@ function camStatus(key, cls) {
 function camScore(label = "") {
   const l = label.toLowerCase();
   if (/iphone|continuity|desk view|데스크 뷰|virtual|obs|snap|camo|ndi|manycam|screen/.test(l)) return -3;
-  if (/facetime|built-in|builtin|integrated|내장|front|전면|user/.test(l)) return 3;
+  if (/facetime|macbook|imac|studio display|built-in|builtin|integrated|내장|front|전면|user/.test(l)) return 3;
   return 0;
 }
 function loadSavedCam() { try { return localStorage.getItem("gw_cam") || null; } catch (e) { return null; } }
@@ -165,7 +165,16 @@ function switchToNextCam(reason) {
   const next = state.devices
     .filter((d) => !state.triedCams.has(d.deviceId))
     .sort((a, b) => camScore(b.label) - camScore(a.label))[0];
-  if (!next) return false;
+  if (!next) {
+    // 모든 카메라를 다 봤으면, 가장 알맞은 카메라로 돌아가서 더는 바꾸지 않기
+    state.searchDone = true;
+    const best = [...state.devices].sort((a, b) => camScore(b.label) - camScore(a.label))[0];
+    if (!best || best.deviceId === state.curCamId) return false;
+    state.deviceId = best.deviceId;
+    camStatus("📷 얼굴을 노란 타원 안에 맞춰 주세요.", "");
+    startStream();
+    return true;
+  }
   state.deviceId = next.deviceId;
   camStatus(reason || "🔄 얼굴이 보이는 카메라를 찾는 중이에요… 잠시만요.", "");
   startStream();
@@ -174,8 +183,8 @@ function switchToNextCam(reason) {
 
 async function openCamera() {
   state.userPicked = false;
+  state.searchDone = false;
   state.triedCams = new Set();
-  state.deviceId = loadSavedCam();
   if (!navigator.mediaDevices?.getUserMedia) {
     return showNotice("카메라를 쓸 수 없어요", "이 브라우저에서는 카메라를 쓸 수 없어요. 대신 '다른 사진 불러오기'를 눌러 휴대폰이나 컴퓨터에 있는 얼굴 사진을 골라 주세요.");
   }
@@ -183,7 +192,24 @@ async function openCamera() {
   $("#camModal").classList.remove("hidden");
   showShootMode();
   initAnalyzer().catch(() => {}); // 카메라가 켜지는 동안 관상 엔진도 미리 준비
+  state.deviceId = await pickInitialCam();
   await startStream();
+}
+// 켜기 전에 카메라 목록을 보고 고릅니다: ① 맥·노트북 내장 카메라 → ② 지난번에 얼굴이 잘 찍힌 카메라 → ③ 아이폰·가상 카메라가 아닌 것
+async function pickInitialCam() {
+  let devs = [];
+  try { devs = (await navigator.mediaDevices.enumerateDevices()).filter((d) => d.kind === "videoinput" && d.deviceId); } catch (e) { /* 무시 */ }
+  const saved = loadSavedCam();
+  if (devs.some((d) => d.label)) {
+    const best = [...devs].sort((a, b) => camScore(b.label) - camScore(a.label))[0];
+    if (best && camScore(best.label) > 0) return best.deviceId;
+    const sv = devs.find((d) => d.deviceId === saved && camScore(d.label) >= 0);
+    if (sv) return sv.deviceId;
+    const ok = devs.find((d) => camScore(d.label) >= 0);
+    if (ok) return ok.deviceId;
+  } else if (saved && devs.some((d) => d.deviceId === saved)) return saved;
+  // 이름을 알 수 없으면, 목록의 첫 번째(대개 내장 카메라)부터
+  return devs.length > 1 ? devs[0].deviceId : null;
 }
 function showShootMode() {
   state.shot = null;
@@ -221,6 +247,7 @@ async function startStream() {
     } catch (e2) { state.devices = []; }
     $("#camFlip").textContent = state.devices.length > 1 ? `🔄 카메라 바꾸기 (${state.devIdx + 1}/${state.devices.length})` : "🔄 카메라 바꾸기";
     state.curCamId = set.deviceId || "";
+    { const d = state.devices.find((x) => x.deviceId === state.curCamId); $("#camName").textContent = d && d.label ? "📷 " + d.label : ""; }
     const cur = state.devices[state.devIdx];
     const best = [...state.devices].sort((a, b) => camScore(b.label) - camScore(a.label))[0];
     if (!state.userPicked && cur && best && best.deviceId !== cur.deviceId && camScore(best.label) > camScore(cur.label)
@@ -275,10 +302,13 @@ async function liveCheck() {
       // 아이폰·가상 카메라처럼 얼굴이 안 보일 법한 카메라에서 4초 넘게 얼굴이 없으면 다음 카메라로
       state.noFaceCount = !r.ok && r.reason === "none" ? (state.noFaceCount || 0) + 1 : 0;
       const curLabel = (state.devices.find((d) => d.deviceId === state.curCamId) || {}).label;
-      const savedHere = state.curCamId && state.curCamId === loadSavedCam();
-      if (state.noFaceCount >= (camScore(curLabel) < 0 ? 4 : 5) && !state.userPicked && !state.camHadFace && !savedHere
+      const savedHere = state.curCamId && state.curCamId === loadSavedCam() && camScore(curLabel) >= 0;
+      const searching = !state.userPicked && !state.camHadFace && !state.searchDone && state.devices.length > 1 && !savedHere && camScore(curLabel) <= 0;
+      if (searching && state.noFaceCount >= (camScore(curLabel) < 0 ? 2 : 3)
           && switchToNextCam("🔄 이 카메라에는 얼굴이 안 보여서 다른 카메라로 바꿔 볼게요…")) return;
-      if (r.ok) { state.camHadFace = true; saveCam(state.curCamId); }
+      if (r.ok) { state.camHadFace = true; if (camScore(curLabel) >= 0 || state.userPicked) saveCam(state.curCamId); }
+      // 맞는 카메라를 찾는 중에는 '얼굴이 안 보여요' 대신 '찾는 중'이라고 안내
+      if (searching && !r.ok && r.reason === "none") { camStatus("🔄 얼굴이 보이는 카메라를 찾는 중이에요… 잠시만요.", ""); state.liveTimer = setTimeout(liveCheck, 500); return; }
       if (state.darkCount >= 4) {
         camStatus(state.devices.length > 1
           ? `⬛ 카메라 화면이 까매요. 아래 '카메라 바꾸기'를 눌러 보세요. (이 컴퓨터에 카메라가 ${state.devices.length}개 있어요)`
