@@ -1,21 +1,46 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=9";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js";
+import { buildReading, level } from "./reading.js?v=9";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js";
-import { FIGURES } from "./figures.js";
-import { fillAds } from "./ads.js";
+} from "./content.js?v=9";
+import { FIGURES } from "./figures.js?v=9";
+import { fillAds } from "./ads.js?v=9";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: null, photo: null, layer: "mesh", stream: null, mirror: true, devices: [], devIdx: 0, deviceId: null, darkCount: 0 };
+
+// ───────────────────────── 자동 업데이트 ─────────────────────────
+// 사파리 탭을 오래 열어 두면 예전 앱이 계속 돌아갑니다.
+// 새 버전이 올라와 있으면 스스로 화면을 새로 불러와 최신 버전으로 바꿉니다.
+export const APP_VERSION = "9";
+async function latestVersion() {
+  try {
+    const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
+    if (!r.ok) return null;
+    return (await r.json()).v || null;
+  } catch (e) { return null; }
+}
+async function updateIfNeeded() {
+  const v = await latestVersion();
+  if (!v || v === APP_VERSION) return false;
+  let done = "";
+  try { done = sessionStorage.getItem("gw_reloaded_for") || ""; } catch (e) { /* 무시 */ }
+  if (done === v) return false; // 같은 버전으로 한 번만 시도 (무한 새로고침 방지)
+  try { sessionStorage.setItem("gw_reloaded_for", v); } catch (e) { /* 무시 */ }
+  toast("✨ 새 버전이 있어서 화면을 새로 불러올게요…", 2000);
+  setTimeout(() => location.reload(), 600);
+  return true;
+}
+updateIfNeeded();
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") updateIfNeeded(); });
 
 // ───────────────────────── 탭 ─────────────────────────
 function showTab(id) {
@@ -91,7 +116,7 @@ function toCanvas(src, w, h, mirror = false, max = 1400) {
 
 // ───────────────────────── 카메라 ─────────────────────────
 // 흐름: 카메라 켜기 → (실시간으로 얼굴이 잘 보이는지 알려 줌) → 촬영 → 찍힌 사진 확인 → 관상 보기
-$("#btnCamera").addEventListener("click", () => ensureGender(openCamera));
+$("#btnCamera").addEventListener("click", async () => { if (await updateIfNeeded()) return; ensureGender(openCamera); });
 
 // 성별을 아직 안 고르셨으면 촬영·사진 불러오기 전에 한 번 여쭤봅니다.
 let genderAsked = false;
@@ -259,7 +284,7 @@ async function startStream() {
     const flipWord = window.innerWidth < 480 ? "🔄 바꾸기" : "🔄 카메라 바꾸기";
     $("#camFlip").textContent = state.devices.length > 1 ? `${flipWord} (${state.devIdx + 1}/${state.devices.length})` : flipWord;
     state.curCamId = set.deviceId || "";
-    { const d = state.devices.find((x) => x.deviceId === state.curCamId); $("#camName").textContent = d && d.label ? "📷 " + friendlyCamName(d.label) : ""; }
+    { const d = state.devices.find((x) => x.deviceId === state.curCamId); $("#camName").textContent = (d && d.label ? "📷 " + friendlyCamName(d.label) + " · " : "") + "v" + APP_VERSION; }
     const cur = state.devices[state.devIdx];
     const best = [...state.devices].sort((a, b) => camScore(b.label) - camScore(a.label))[0];
     if (!state.userPicked && cur && best && best.deviceId !== cur.deviceId && camScore(best.label) > camScore(cur.label)
