@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://gwansang-dosa.pages.dev/sitemap.xml
+Sitemap: https://gwansangdosa.com/sitemap.xml

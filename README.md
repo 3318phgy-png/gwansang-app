@@ -35,16 +35,17 @@ GitHub의 `main` 브랜치에 올리면 자동으로 다시 배포됩니다.
 
 | 설정 | 값 |
 |---|---|
-| 프로젝트 이름 | `gwansang-dosa` → 주소 `https://gwansang-dosa.pages.dev` |
+| 프로젝트 이름 | `gwansang-dosa` → 기본 주소 `https://gwansang-dosa.pages.dev` |
+| 대표 주소 (도메인) | **`https://gwansangdosa.com`** (Cloudflare에서 구매, Custom domains로 연결) |
 | Framework preset | None |
 | Build command | (비움) |
 | Build output directory | (비움) — 저장소 최상위 폴더를 그대로 배포 |
 
 - 캐시 설정은 `_headers` 파일에 있습니다. (`netlify.toml`은 예전 Netlify용)
-- 배포 후 `https://gwansang-dosa.pages.dev/version.json`의 숫자가 `js/app.js`의 `APP_VERSION`과 같은지 확인하세요.
+- 배포 후 `https://gwansangdosa.com/version.json`의 숫자가 `js/app.js`의 `APP_VERSION`과 같은지 확인하세요.
   앱은 이 숫자를 보고 오래 열린 탭도 스스로 새 버전으로 바꿉니다. 고칠 때마다 두 곳(+ `?v=` 번호)을 함께 올립니다.
 - 프로젝트 이름이 달라 주소가 바뀌면 `robots.txt`, `sitemap.xml`, 각 HTML의 `canonical` 주소를 함께 바꿉니다.
-- 구글 애드센스는 `pages.dev` 같은 하위 주소로는 신청할 수 없어 개인 도메인이 필요합니다.
+- 구글 애드센스·서치 콘솔에는 대표 주소 `gwansangdosa.com`으로 등록합니다. (영어판은 나중에 `facefate.com` 예정)
 
 ## 광고 넣기
 `js/ads.js`의 `ADS_CONFIG`에 AdSense `client`(ca-pub-…)와 슬롯 ID를 넣으면 자동으로 광고가 채워집니다.
