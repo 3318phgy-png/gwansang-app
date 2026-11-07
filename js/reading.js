@@ -6,8 +6,8 @@ import {
   FACE_SHAPES, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, HOOKS, METRIC_LABELS, FIVE_ORGANS,
   AGE_GROUPS, AGE_LINES, GROOMING_TIPS, GENDERS,
-} from "./content.js?v=11";
-import { FIGURES } from "./figures.js?v=11";
+} from "./content.js?v=12";
+import { FIGURES } from "./figures.js?v=12";
 
 export const level = (z) => (z >= 0.8 ? "hi" : z <= -0.8 ? "lo" : "mid");
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -108,7 +108,7 @@ export function buildReading(analysis, earKey = "auto", profile = {}) {
     `${shape.emoji} 당신의 얼굴은 ${shape.alias}, 신상전편으로 치면 '${shape.name}'입니다. ${shape.text} ` +
     `실제 측정에서 가장 돋보인 부위는 '${strongParts[0]}'와(과) '${strongParts[1]}'였어요. ` +
     `${sanjeong} ` + ageText +
-    `그래서 8가지 운 중 ${best.emoji}${best.name}(${best.score}점)과 ${second.emoji}${second.name}(${second.score}점)이 특히 강하게 나왔습니다. ` +
+    `그래서 ${fortunes.length}가지 운 중 ${best.emoji}${best.name}(${best.score}점)과 ${second.emoji}${second.name}(${second.score}점)이 특히 강하게 나왔습니다. ` +
     `유장상법은 '얼굴은 마음 따라 변한다'고 했어요. 지금의 좋은 기운을 살리고 아쉬운 곳은 표정과 습관으로 채우면, 관상은 얼마든지 더 좋아질 수 있답니다.`;
 
   return {

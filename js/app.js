@@ -1,15 +1,15 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=11";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=12";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js?v=11";
+import { buildReading, level } from "./reading.js?v=12";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js?v=11";
-import { FIGURES } from "./figures.js?v=11";
-import { fillAds } from "./ads.js?v=11";
+} from "./content.js?v=12";
+import { FIGURES } from "./figures.js?v=12";
+import { fillAds } from "./ads.js?v=12";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -20,7 +20,7 @@ const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: 
 // ───────────────────────── 자동 업데이트 ─────────────────────────
 // 사파리 탭을 오래 열어 두면 예전 앱이 계속 돌아갑니다.
 // 새 버전이 올라와 있으면 스스로 화면을 새로 불러와 최신 버전으로 바꿉니다.
-export const APP_VERSION = "11";
+export const APP_VERSION = "12";
 async function latestVersion() {
   try {
     const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
@@ -600,7 +600,7 @@ function radar(fortunes) {
   for (const lv of [25, 50, 75, 100]) g += `<polygon class="grid" points="${fortunes.map((_, i) => pt(i, lv).join(",")).join(" ")}"/>`;
   fortunes.forEach((_, i) => { const [x, y] = pt(i, 100); g += `<line class="grid" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`; });
   const poly = fortunes.map((f, i) => pt(i, f.score).join(",")).join(" ");
-  const labels = fortunes.map((f, i) => { const [x, y] = pt(i, 124); return `<text class="axis-label" x="${x}" y="${y + 4}" text-anchor="middle">${f.emoji}${f.name.replace("·합격", "").replace("·인복", "")}</text>`; }).join("");
+  const labels = fortunes.map((f, i) => { const [x, y] = pt(i, 124); return `<text class="axis-label" x="${x}" y="${y + 4}" text-anchor="middle">${f.emoji}${f.name.replace("·합격", "").replace("·인복", "").replace("·부부", "")}</text>`; }).join("");
   const dots = fortunes.map((f, i) => { const [x, y] = pt(i, f.score); return `<circle cx="${x}" cy="${y}" r="4" fill="${f.color}" stroke="#fff" stroke-width="1.5"/>`; }).join("");
   return `<svg class="radar" viewBox="0 0 300 300" role="img" aria-label="운세 레이더 차트">
     <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6b8b"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient></defs>
@@ -638,7 +638,7 @@ function renderResult(scroll) {
         <p class="eyebrow" style="color:#ffc94d">관상도사의 첫마디</p>
         <p class="hook-line">“${esc(R.hook)}”</p>
         <span class="shape-badge">${R.shape.emoji} ${R.shape.alias} · ${R.shape.name}</span>${R.profileLabel ? `<span class="profile-tag">👤 ${esc(R.profileLabel)}</span>` : ""}
-        <div class="total">${ring(R.total)}<div><b style="font-size:18px">관상 종합 ${R.total}점</b><p>8가지 운의 평균이에요. 가장 강한 운은 <b>${R.ranked[0].name}</b>!</p></div></div>
+        <div class="total">${ring(R.total)}<div><b style="font-size:18px">관상 종합 ${R.total}점</b><p>${R.fortunes.length}가지 운의 평균이에요. 가장 강한 운은 <b>${R.ranked[0].name}</b>!</p></div></div>
         <div class="mini-bars">${R.fortunes.map((f) => `<div class="mini-bar"><span>${f.emoji} ${f.name}<b>${f.score}</b></span><i><b style="width:${f.score}%;background:${f.color}"></b></i></div>`).join("")}</div>
       </div>
     </div>
@@ -776,7 +776,7 @@ async function buildShareCanvas() {
     ctx.textAlign = "right"; ctx.fillText(String(f.score), W - 70, y); ctx.textAlign = "left";
     ctx.fillStyle = "rgba(255,255,255,.18)"; roundRect(ctx, rx, y + 12, W - 70 - rx, 12, 6); ctx.fill();
     ctx.fillStyle = f.color; roundRect(ctx, rx, y + 12, (W - 70 - rx) * f.score / 100, 12, 6); ctx.fill();
-    y += 56;
+    y += R.fortunes.length > 8 ? 50 : 56;
   }
 
   // 훅 문구 + 총평 요약
