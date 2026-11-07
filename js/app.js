@@ -1,15 +1,15 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=12";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=13";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js?v=12";
+import { buildReading, level } from "./reading.js?v=13";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js?v=12";
-import { FIGURES } from "./figures.js?v=12";
-import { fillAds } from "./ads.js?v=12";
+} from "./content.js?v=13";
+import { FIGURES } from "./figures.js?v=13";
+import { fillAds } from "./ads.js?v=13";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -20,7 +20,7 @@ const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: 
 // ───────────────────────── 자동 업데이트 ─────────────────────────
 // 사파리 탭을 오래 열어 두면 예전 앱이 계속 돌아갑니다.
 // 새 버전이 올라와 있으면 스스로 화면을 새로 불러와 최신 버전으로 바꿉니다.
-export const APP_VERSION = "12";
+export const APP_VERSION = "13";
 async function latestVersion() {
   try {
     const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
@@ -776,7 +776,7 @@ async function buildShareCanvas() {
     ctx.textAlign = "right"; ctx.fillText(String(f.score), W - 70, y); ctx.textAlign = "left";
     ctx.fillStyle = "rgba(255,255,255,.18)"; roundRect(ctx, rx, y + 12, W - 70 - rx, 12, 6); ctx.fill();
     ctx.fillStyle = f.color; roundRect(ctx, rx, y + 12, (W - 70 - rx) * f.score / 100, 12, 6); ctx.fill();
-    y += R.fortunes.length > 8 ? 50 : 56;
+    y += R.fortunes.length > 9 ? 46 : R.fortunes.length > 8 ? 50 : 56;
   }
 
   // 훅 문구 + 총평 요약
