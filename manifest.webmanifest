@@ -1,0 +1,25 @@
+{
+  "name": "관상도사 · 무료 AI 관상",
+  "short_name": "관상도사",
+  "description": "사진 한 장으로 보는 무료 AI 실관상",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#2b1d5c",
+  "theme_color": "#2b1d5c",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

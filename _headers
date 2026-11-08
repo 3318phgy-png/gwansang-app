@@ -17,3 +17,12 @@
 # 최신 버전 번호: 절대 저장하지 않음 (자동 업데이트 확인용)
 /version.json
   Cache-Control: no-store
+
+# 아이콘·미리보기 그림: 하루 동안 저장
+/icons/*
+  Cache-Control: public, max-age=86400
+/img/*
+  Cache-Control: public, max-age=86400
+/manifest.webmanifest
+  Content-Type: application/manifest+json
+  Cache-Control: public, max-age=3600
