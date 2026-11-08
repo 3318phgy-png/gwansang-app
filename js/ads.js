@@ -1,7 +1,7 @@
 // =====================================================================
 //  ads.js — 광고 영역 설정
 //  Google AdSense 승인 후 아래 client / slot 값만 채우면 자동으로 광고가 들어갑니다.
-//  값이 비어 있으면 레이아웃 확인용 자리표시(placeholder)가 보입니다.
+//  값이 비어 있으면 광고 자리를 숨깁니다. (주소에 ?adpreview 를 붙이면 자리표시가 보입니다)
 // =====================================================================
 export const ADS_CONFIG = {
   client: "", // 예: "ca-pub-1234567890123456"
@@ -14,6 +14,7 @@ export const ADS_CONFIG = {
 };
 
 let scriptLoaded = false;
+const PREVIEW = typeof location !== "undefined" && /[?&]adpreview/.test(location.search);
 
 export function fillAds(root = document) {
   const { client, slots } = ADS_CONFIG;
@@ -21,8 +22,9 @@ export function fillAds(root = document) {
     const conf = slots[el.dataset.ad] || slots.infeed;
     el.dataset.filled = "1";
     if (!client || !conf.id) {
-      el.classList.add("placeholder");
-      el.dataset.size = conf.size;
+      // 광고 번호가 없으면 숨깁니다. 주소 끝에 ?adpreview 를 붙이면 자리표시를 볼 수 있어요.
+      if (PREVIEW) { el.classList.add("placeholder"); el.dataset.size = conf.size; }
+      else { el.style.display = "none"; const anchor = el.closest(".ad-anchor"); if (anchor) anchor.style.display = "none"; }
       return;
     }
     if (!scriptLoaded) {

@@ -316,6 +316,17 @@ emit("/books", page({
   body: BOOKS.map((b) => `<section class="card prose" style="border-top:5px solid ${b.color}"><h2>${esc(b.name)} <small>${esc(b.hanja)} · ${esc(b.era)}</small></h2><p>${esc(b.desc)}</p><div class="tagrow">${b.key.map((k) => `<span>${esc(k)}</span>`).join("")}</div></section>`).join("\n"),
 }));
 
+// ── 없는 주소 안내 (404) ─────────────────────────────────
+{
+  const html = page({
+    path: "/404", title: "페이지를 찾을 수 없어요 | 관상도사",
+    desc: "찾으시는 페이지가 없거나 주소가 바뀌었어요. 아래에서 원하는 곳으로 가 보세요.",
+    h1: "🔍 페이지를 찾을 수 없어요", eyebrow: "404",
+    body: `<section class="card prose"><p>주소가 잘못 입력되었거나 페이지가 옮겨졌을 수 있어요. 첫 화면에서 바로 관상을 보시거나, 관상 백과를 둘러보세요.</p></section>`,
+  }).replace("<head>", '<head>\n  <meta name="robots" content="noindex" />').replace(/\s*<link rel="canonical"[^>]*>/, "");
+  writeFileSync(join(ROOT, "404.html"), html);
+}
+
 // ── 사이트 지도 ──────────────────────────────────────────
 const urls = [["/", "1.0"], ["/figures", "0.8"], ["/parts", "0.8"], ["/fortune", "0.8"], ["/shapes", "0.7"], ["/palaces", "0.7"], ["/books", "0.6"],
   ...OUT.filter((p) => /^\/(figures|parts|fortune)\//.test(p)).map((p) => [p, "0.7"]),
