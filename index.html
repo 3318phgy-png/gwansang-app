@@ -24,7 +24,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=14" />
+  <link rel="stylesheet" href="css/style.css?v=15" />
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
@@ -61,6 +61,12 @@
             <p class="eyebrow">마의상법 · 유장상법 · 신상전편</p>
             <h1>얼굴에 쓰인 운명,<br /><span class="grad">진짜로</span> 읽어드릴게요</h1>
             <p class="lead">랜덤 운세 아니고요, 진짜 <b>내 얼굴</b>을 478개 지점으로 실측해서 눈썹·눈·코·입·턱의 비율로 관상을 풀어요. 사진은 기기 밖으로 나가지 않아요.</p>
+            <div class="step-box profile-picker">
+              <p class="step-title"><span class="step-no">1</span> 나이와 성별을 골라 주세요 <small>그 나이에 맞춰 풀어 드려요</small></p>
+              <div class="pp-row"><em>나이</em><div class="chips" id="ageChips"></div></div>
+              <div class="pp-row"><em>성별</em><div class="chips" id="genderChips"></div></div>
+            </div>
+            <p class="step-title"><span class="step-no">2</span> 사진으로 관상 보기</p>
             <div class="cta-row">
               <button class="btn btn-primary btn-xl" id="btnCamera">📸 지금 바로 촬영</button>
               <label class="btn btn-ghost btn-xl pick-photo" for="fileInput">🖼️ 사진 불러오기</label>
@@ -83,12 +89,6 @@
               <span class="orb-tag t1">재백궁</span><span class="orb-tag t2">명궁</span><span class="orb-tag t3">관록궁</span><span class="orb-tag t4">출납관</span>
             </div>
           </div>
-        </div>
-
-        <div class="ear-picker card profile-picker">
-          <div class="ear-head"><b>👤 나에게 맞춘 풀이</b><span>나이대와 성별을 고르면 그 시기에 맞춰 풀어 드려요 (선택)</span></div>
-          <div class="pp-row"><em>나이</em><div class="chips" id="ageChips"></div></div>
-          <div class="pp-row"><em>성별</em><div class="chips" id="genderChips"></div></div>
         </div>
 
         <div class="ear-picker card">
@@ -215,7 +215,7 @@
     <div class="wrap">
       <p><b>관상도사</b> · 마의상법 · 유장상법 · 신상전편 기반 재미용 관상 서비스</p>
       <p class="small">관상 백과: <a href="/parts" style="color:inherit">부위별 관상</a> · <a href="/fortune" style="color:inherit">운세별 관상</a> · <a href="/figures" style="color:inherit">인물 관상 38인</a> · <a href="/shapes" style="color:inherit">오행 얼굴형</a> · <a href="/palaces" style="color:inherit">십이궁</a> · <a href="/books" style="color:inherit">3대 고전</a></p>
-      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 14 (관상 백과 페이지)</p>
+      <p class="small"><a href="about.html" style="color:inherit">서비스 소개·광고 문의</a> · <a href="privacy.html" style="color:inherit">개인정보처리방침</a> · <a href="terms.html" style="color:inherit">이용약관</a> · © 2026 관상도사 · 버전 15 (나이·성별 먼저)</p>
     </div>
   </footer>
 
@@ -262,6 +262,6 @@
 
   <div class="toast hidden" id="toast"></div>
 
-  <script type="module" src="js/app.js?v=14"></script>
+  <script type="module" src="js/app.js?v=15"></script>
 </body>
 </html>

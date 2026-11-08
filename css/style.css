@@ -437,3 +437,19 @@ button { font-family: inherit; cursor: pointer; }
 .photo-card .layer-toggle { justify-content: center; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .photo-card { background: linear-gradient(170deg, #2b2140, #221a45); } }
 :root[data-theme="dark"] .photo-card { background: linear-gradient(170deg, #2b2140, #221a45); }
+
+/* ── 첫 화면 순서: ① 나이·성별 → ② 사진 ───────── */
+.step-title { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; font-weight: 900; font-size: 17px; }
+.step-title small { font-weight: 500; font-size: 13px; color: var(--ink2); }
+.step-no { width: 28px; height: 28px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 15px; color: #fff;
+  background: linear-gradient(135deg, var(--coral), var(--violet)); box-shadow: 0 4px 10px -3px rgba(139, 92, 246, 0.6); }
+.step-box { background: var(--card); border: 2px solid color-mix(in srgb, var(--violet) 30%, transparent); border-radius: 18px; padding: 14px 16px 12px; margin: 0 0 18px; }
+.step-box .pp-row { margin-top: 6px; }
+.step-box .pp-row:first-of-type { margin-top: 0; }
+@media (max-width: 760px) {
+  .hero-visual { display: none; }
+  .hero { gap: 14px; padding-top: 18px; }
+  .hero h1 { margin-top: 2px; }
+  .hero .lead { font-size: 14.5px; margin-bottom: 14px; }
+  .step-box .chip { padding: 7px 11px; font-size: 14px; }
+}

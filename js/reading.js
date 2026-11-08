@@ -6,8 +6,8 @@ import {
   FACE_SHAPES, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, HOOKS, METRIC_LABELS, FIVE_ORGANS,
   AGE_GROUPS, AGE_LINES, GROOMING_TIPS, GENDERS,
-} from "./content.js?v=14";
-import { FIGURES } from "./figures.js?v=14";
+} from "./content.js?v=15";
+import { FIGURES } from "./figures.js?v=15";
 
 export const level = (z) => (z >= 0.8 ? "hi" : z <= -0.8 ? "lo" : "mid");
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
