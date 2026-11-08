@@ -1,15 +1,15 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=13";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=14";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js?v=13";
+import { buildReading, level } from "./reading.js?v=14";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js?v=13";
-import { FIGURES } from "./figures.js?v=13";
-import { fillAds } from "./ads.js?v=13";
+} from "./content.js?v=14";
+import { FIGURES } from "./figures.js?v=14";
+import { fillAds } from "./ads.js?v=14";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -20,7 +20,7 @@ const state = { shot: null, liveTimer: 0, ear: "auto", analysis: null, reading: 
 // ───────────────────────── 자동 업데이트 ─────────────────────────
 // 사파리 탭을 오래 열어 두면 예전 앱이 계속 돌아갑니다.
 // 새 버전이 올라와 있으면 스스로 화면을 새로 불러와 최신 버전으로 바꿉니다.
-export const APP_VERSION = "13";
+export const APP_VERSION = "14";
 async function latestVersion() {
   try {
     const r = await fetch("version.json?t=" + Date.now(), { cache: "no-store" });
@@ -874,6 +874,7 @@ function renderFortuneTab() {
       <p>${f.classic}</p>
       <p>${Object.values(FORTUNE_LINES[f.id])[0].hi}</p>
       <p class="tipline">🍀 ${f.tip}</p>
+      <p style="margin:10px 0 0"><a href="/fortune/${f.id}" style="color:var(--violet);font-weight:700;text-decoration:none">${f.name} 관상 자세히 보기 →</a></p>
     </article>`).join("");
   const tipKeys = ["mouthCorner", "browLen", "glabella", "noseWidth", "eyeOpen", "upper", "lipThick", "smile", "jawWidth"];
   $("#tipGrid").innerHTML = tipKeys.map((k) => `<div class="card"><h4>${METRIC_LABELS[k]}</h4><p><b>보완하고 싶다면</b> ${MAKEUP_TIPS[k].lo}</p><p><b>이미 좋다면</b> ${MAKEUP_TIPS[k].hi}</p></div>`).join("");
@@ -891,7 +892,7 @@ function renderFigures() {
       <div class="shape">${FACE_SHAPES[f.shape].emoji} ${FACE_SHAPES[f.shape].alias} · ${FACE_SHAPES[f.shape].name}</div>
       <div class="tagrow">${f.parts.map((p) => `<span>${p}</span>`).join("")}</div>
       <p class="clip">${f.text}</p>
-      <button class="more">전체 풀이 보기 ▾</button>
+      <button class="more">전체 풀이 보기 ▾</button> <a href="/figures/${f.id}" style="margin-left:10px;color:var(--violet);font-weight:700;font-size:13.5px;text-decoration:none">인물 페이지 →</a>
       <div class="fbars" style="margin-top:10px">${Object.entries(f.fortunes).map(([k, v]) => `<div><span>${k}</span><i><b style="width:${v}%;background:${f.color}"></b></i><b>${v}</b></div>`).join("")}</div>
     </article>`).join("");
   $$("#figGrid .more").forEach((b) => b.addEventListener("click", () => {

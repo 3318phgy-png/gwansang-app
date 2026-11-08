@@ -84,3 +84,15 @@ vendor/             MediaPipe 엔진과 얼굴 모델(오프라인 동작, 약 2
 - 풀이는 고전의 체계(오관·삼정·십이궁·오행형)를 현대적으로 재해석한 것으로, 원문 직역 인용이 아닙니다.
 - 인물 관상은 공개 초상·사진의 널리 알려진 인상을 바탕으로 한 재미용 해석이며, 인물 사진은 넣지 않았습니다(저작권·초상권).
 - 사진은 브라우저 안에서만 처리되며 서버로 전송되지 않습니다.
+
+## 관상 백과 페이지 (검색용 정적 페이지)
+`figures/`, `parts/`, `fortune/` 폴더와 `figures.html`, `parts.html`, `fortune.html`, `shapes.html`, `palaces.html`, `books.html`,
+그리고 `sitemap.xml`은 **`tools/build-pages.mjs`가 자동으로 만든 파일**입니다. 직접 고치지 말고,
+`js/content.js`·`js/figures.js`(풀이 데이터)나 생성 스크립트를 고친 뒤 다시 만드세요.
+
+```bash
+node tools/build-pages.mjs
+```
+
+- 페이지 스타일은 `css/pages.css`, 기본 스타일은 `css/style.css`를 함께 씁니다.
+- 주소는 Cloudflare Pages 방식(`/figures/sejong.html` → `/figures/sejong`)에 맞춰 `.html` 없이 연결합니다.

@@ -1,0 +1,76 @@
+/* =====================================================================
+   관상 백과 페이지 (tools/build-pages.mjs가 만드는 페이지) 전용 스타일
+   기본 색·글꼴·카드·헤더는 style.css를 그대로 씁니다.
+   ===================================================================== */
+a.tab { text-decoration: none; display: inline-flex; align-items: center; }
+.article { max-width: 920px; padding-top: 8px; padding-bottom: 20px; }
+.article a { color: var(--violet); }
+.article .card { margin: 14px 0; }
+.crumbs { font-size: 13px; color: var(--ink2); margin: 10px 0 4px; }
+.crumbs a { color: var(--ink2); text-decoration: none; }
+.crumbs a:hover { color: var(--violet); }
+.art-head { margin: 10px 0 18px; }
+.art-head h1 { font-family: var(--display); font-weight: 400; font-size: clamp(30px, 5vw, 44px); line-height: 1.25; margin: 4px 0 10px; }
+.art-head .lead { color: var(--ink2); font-size: 16.5px; margin: 0; }
+.article h2 { font-size: 21px; margin: 0 0 12px; line-height: 1.4; }
+.article h2 small { font-size: 14px; color: var(--ink2); font-weight: 500; }
+.prose p { font-family: var(--serif); font-size: 17px; line-height: 1.95; margin: 0 0 10px; }
+.prose p:last-child { margin-bottom: 0; }
+.note { font-size: 14px; color: var(--ink2); margin: 10px 0 8px; }
+
+.type-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.type-list > div { background: var(--bg2); border-radius: 14px; padding: 12px 14px; }
+.type-list b { display: block; color: var(--violet); font-size: 14.5px; margin-bottom: 4px; }
+.type-list b a { font-weight: 500; font-size: 13px; }
+.type-list p { margin: 4px 0 0; font-size: 15px; line-height: 1.75; }
+.tipline { font-size: 14px; background: var(--bg2); border-radius: 12px; padding: 10px 12px; margin: 10px 0 0; line-height: 1.7; }
+.prose .tipline { font-family: var(--font); font-size: 14px; }
+
+.link-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.link-grid a { text-decoration: none; padding: 8px 14px; border-radius: 999px; background: var(--bg2); border: 1px solid var(--line); color: var(--ink); font-size: 14.5px; font-weight: 500; }
+.link-grid a:hover { border-color: var(--violet); color: var(--violet); }
+.link-grid small { color: var(--ink2); font-weight: 400; margin-left: 2px; }
+
+.fig-hero { display: flex; gap: 16px; align-items: center; border-left: 6px solid var(--c); }
+.fig-hero .av { width: 78px; height: 78px; flex: none; border-radius: 22px; display: grid; place-items: center; font-size: 40px; background: color-mix(in srgb, var(--c) 18%, transparent); }
+.fig-hero .meta { margin: 0; font-size: 13.5px; color: var(--ink2); }
+.fig-hero .shape { margin: 4px 0 6px; font-weight: 700; }
+
+.fbars { display: flex; flex-direction: column; gap: 8px; }
+.fbars > div { display: grid; grid-template-columns: 88px 1fr 40px; gap: 10px; align-items: center; font-size: 15px; }
+.fbars a { text-decoration: none; font-weight: 700; }
+.fbars i { height: 9px; border-radius: 9px; background: var(--bg2); overflow: hidden; }
+.fbars i b { display: block; height: 100%; border-radius: 9px; }
+.fbars em { font-style: normal; font-weight: 900; text-align: right; }
+
+.fig-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fig-item { display: flex; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 16px; background: var(--bg2); text-decoration: none; color: var(--ink) !important; border: 1px solid transparent; }
+.fig-item:hover { border-color: var(--c); }
+.fig-item .av { width: 46px; height: 46px; flex: none; border-radius: 14px; display: grid; place-items: center; font-size: 24px; background: color-mix(in srgb, var(--c) 20%, transparent); }
+.fig-item b { display: block; }
+.fig-item small { color: var(--ink2); font-size: 12.5px; }
+
+.part-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.part-cards a { text-decoration: none; color: var(--ink) !important; background: var(--bg2); border-radius: 18px; padding: 18px 14px; text-align: center; border: 1px solid transparent; border-top: 4px solid var(--c, var(--violet)); }
+.part-cards a:hover { border-color: var(--violet); }
+.part-cards .em { display: block; font-size: 34px; }
+.part-cards b { display: block; font-size: 17px; margin-top: 4px; }
+.part-cards small { color: var(--ink2); font-size: 12.5px; }
+
+.organ-box { display: flex; flex-direction: column; gap: 2px; border-left: 6px solid var(--gold); }
+.organ-box b { font-family: var(--serif); font-size: 19px; }
+.organ-box span { color: var(--ink2); }
+
+.cta { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: 22px 0; padding: 22px; border-radius: var(--radius);
+  background: linear-gradient(120deg, var(--night), #5a3db5 60%, #b14d8d); color: #fff; }
+.cta b { display: block; font-size: 21px; margin-bottom: 4px; }
+.cta span { display: block; font-size: 14.5px; opacity: 0.9; max-width: 520px; }
+.cta .btn { color: #fff !important; text-decoration: none; }
+.more h2 { font-size: 18px; }
+
+@media (max-width: 760px) {
+  .fig-list, .part-cards { grid-template-columns: minmax(0, 1fr); }
+  .part-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fbars > div { grid-template-columns: 76px 1fr 34px; }
+  .cta .btn { width: 100%; }
+}
