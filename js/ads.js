@@ -4,7 +4,7 @@
 //  값이 비어 있으면 광고 자리를 숨깁니다. (주소에 ?adpreview 를 붙이면 자리표시가 보입니다)
 // =====================================================================
 export const ADS_CONFIG = {
-  client: "", // 예: "ca-pub-1234567890123456"
+  client: "ca-pub-2164050743743017", // 애드센스 게시자 ID
   slots: {
     top: { id: "", size: "728×90 / 320×100", format: "horizontal" },  // 상단 리더보드
     infeed: { id: "", size: "300×250 · 인피드", format: "fluid" },     // 결과 중간 (여러 개)
@@ -27,7 +27,7 @@ export function fillAds(root = document) {
       else { el.style.display = "none"; const anchor = el.closest(".ad-anchor"); if (anchor) anchor.style.display = "none"; }
       return;
     }
-    if (!scriptLoaded) {
+    if (!scriptLoaded && !document.querySelector('script[src*="adsbygoogle.js"]')) {
       const s = document.createElement("script");
       s.async = true;
       s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`;

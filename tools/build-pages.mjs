@@ -75,6 +75,7 @@ function page({ path, title, desc, lead, h1, eyebrow, crumbs = [], body, jsonld 
   <link rel="stylesheet" href="/css/style.css?v=${APP_V}" />
   <link rel="stylesheet" href="/css/pages.css?v=${APP_V}" />
   ${ld.map((o) => `<script type="application/ld+json">${JSON.stringify(o)}</script>`).join("\n  ")}
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2164050743743017" crossorigin="anonymous"></script>
 </head>
 <body>
   <header class="site-header">
