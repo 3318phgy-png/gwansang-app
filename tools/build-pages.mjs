@@ -175,7 +175,7 @@ for (const f of FIGURES) {
     </section>`;
   emit(`/figures/${f.id}`, page({
     path: `/figures/${f.id}`,
-    title: `${f.name} 관상 풀이 · ${shape.alias}(${shape.name}) | 관상도사`,
+    title: `${f.name} 관상 풀이 · ${shape.alias} ${shape.name} | 관상도사`,
     desc: clip(`${f.name}(${f.role})의 관상을 마의상법·신상전편으로 풀어 봤어요. ${f.parts.join(", ")}. ${f.text}`, 150),
     lead: `${f.name}(${f.role})의 얼굴을 마의상법·신상전편으로 풀어 봤어요. ${f.parts.join(" · ")}에 담긴 이야기를 만나 보세요.`,
     h1: `${f.emoji} ${esc(f.name)} 관상`,
