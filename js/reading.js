@@ -6,8 +6,8 @@ import {
   FACE_SHAPES, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, HOOKS, METRIC_LABELS, FIVE_ORGANS,
   AGE_GROUPS, AGE_LINES, GROOMING_TIPS, GENDERS,
-} from "./content.js?v=17";
-import { FIGURES } from "./figures.js?v=17";
+} from "./content.js?v=18";
+import { FIGURES } from "./figures.js?v=18";
 
 export const level = (z) => (z >= 0.8 ? "hi" : z <= -0.8 ? "lo" : "mid");
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -113,7 +113,7 @@ export function buildReading(analysis, earKey = "auto", profile = {}) {
 
   return {
     seed, z, shapeKey, shape, fortunes, ranked, total, parts, hook, summary,
-    profileLabel: [ageInfo.keys ? ageInfo.label : "", gender ? GENDERS[gender] : ""].filter(Boolean).join(" · "),
+    profileLabel: [gender ? GENDERS[gender] : "", ageInfo.keys ? ageInfo.label : ""].filter(Boolean).join(" · "),
     tipLabel: gender === "m" ? "💈 그루밍 · 인상 팁" : "💄 메이크업 · 인상 팁",
     figures: matchFigures(z, gender),
     gender,
