@@ -1,15 +1,15 @@
 // =====================================================================
 //  app.js — 화면 구성 · 카메라 · 업로드 · 결과 렌더링 · 이미지 저장
 // =====================================================================
-import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=18";
+import { initAnalyzer, analyzeImage, quickCheck } from "./analyzer.js?v=19";
 import { FaceLandmarker } from "../vendor/mediapipe/vision_bundle.mjs";
-import { buildReading, level } from "./reading.js?v=18";
+import { buildReading, level } from "./reading.js?v=19";
 import {
   BOOKS, PALACES, FIVE_ORGANS, PART_READINGS, FORTUNES, FORTUNE_LINES, MAKEUP_TIPS,
   EAR_TYPES, FACE_SHAPES, METRIC_LABELS, AGE_GROUPS, GENDERS,
-} from "./content.js?v=18";
-import { FIGURES } from "./figures.js?v=18";
-import { fillAds } from "./ads.js?v=18";
+} from "./content.js?v=19";
+import { FIGURES } from "./figures.js?v=19";
+import { fillAds } from "./ads.js?v=19";
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -509,7 +509,27 @@ function paintPortrait(ctx, photo, b, W, H) {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 
-const GOLD = "rgba(255, 222, 150, 0.9)";
+// 얼굴 윤곽 랜드마크 (이마 위에서 시계방향)
+const FACE_OVAL_ORDER = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377,
+  152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+// 점들을 부드러운 곡선으로 잇기 (Catmull-Rom)
+function smoothPath(ctx, pts, closed = false) {
+  const n = pts.length, at = (i) => pts[closed ? (i + n) % n : Math.max(0, Math.min(n - 1, i))];
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  for (let i = 0; i < (closed ? n : n - 1); i++) {
+    const p0 = at(i - 1), p1 = at(i), p2 = at(i + 1), p3 = at(i + 2);
+    ctx.bezierCurveTo(p1.x + (p2.x - p0.x) / 6, p1.y + (p2.y - p0.y) / 6, p2.x - (p3.x - p1.x) / 6, p2.y - (p3.y - p1.y) / 6, p2.x, p2.y);
+  }
+  if (closed) ctx.closePath();
+}
+// 반짝이는 네 갈래 별
+function sparkle(ctx, x, y, r, color) {
+  const k = r * 0.28;
+  ctx.fillStyle = color; ctx.beginPath();
+  ctx.moveTo(x, y - r); ctx.quadraticCurveTo(x + k, y - k, x + r, y); ctx.quadraticCurveTo(x + k, y + k, x, y + r);
+  ctx.quadraticCurveTo(x - k, y + k, x - r, y); ctx.quadraticCurveTo(x - k, y - k, x, y - r); ctx.fill();
+}
+
 function drawOverlay(target, photo, lm, layer, crop = true) {
   const b = crop ? cropBox(lm, photo.width, photo.height) : { x: 0, y: 0, w: photo.width, h: photo.height };
   const scale = crop ? 900 / b.w : 1;
@@ -523,42 +543,41 @@ function drawOverlay(target, photo, lm, layer, crop = true) {
   if (layer === "portrait" || layer === "none") return;
 
   if (layer === "mesh") {
+    // 얼굴 위에 선을 긋지 않고, 바깥에 은은한 빛 테두리 + 작은 별빛만 얹어서 예쁘게
+    const cx = (P(234).x + P(454).x) / 2, cy = (P(10).y + P(152).y) / 2;
+    const halo = FACE_OVAL_ORDER.map((i) => { const p = P(i); return { x: cx + (p.x - cx) * 1.07, y: cy + (p.y - cy) * 1.06 }; });
+    const grad = ctx.createLinearGradient(0, P(10).y, 0, P(152).y);
+    grad.addColorStop(0, "rgba(255,236,190,.95)"); grad.addColorStop(0.5, "rgba(255,190,215,.9)"); grad.addColorStop(1, "rgba(255,236,190,.95)");
     ctx.save();
     ctx.lineCap = "round"; ctx.lineJoin = "round";
-    ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 2 * unit;
-    // 얼굴 윤곽: 아주 옅은 점선
-    ctx.setLineDash([1.5 * unit, 3 * unit]); ctx.lineWidth = 0.9 * unit; ctx.strokeStyle = "rgba(255,255,255,.35)";
-    ctx.beginPath();
-    for (const c of FaceLandmarker.FACE_LANDMARKS_FACE_OVAL) { const a = P(c.start), e = P(c.end); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); }
-    ctx.stroke(); ctx.setLineDash([]);
-    // 눈썹 · 눈 · 입: 가는 금빛 선
-    ctx.lineWidth = 1.1 * unit; ctx.strokeStyle = GOLD;
-    for (const conns of [FaceLandmarker.FACE_LANDMARKS_LEFT_EYEBROW, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYEBROW,
-      FaceLandmarker.FACE_LANDMARKS_LEFT_EYE, FaceLandmarker.FACE_LANDMARKS_RIGHT_EYE, FaceLandmarker.FACE_LANDMARKS_LIPS]) {
-      ctx.beginPath();
-      for (const c of conns) { const a = P(c.start), e = P(c.end); ctx.moveTo(a.x, a.y); ctx.lineTo(e.x, e.y); }
-      ctx.stroke();
+    // 넓고 옅은 후광
+    ctx.shadowColor = "rgba(255,214,170,.9)"; ctx.shadowBlur = 10 * unit;
+    ctx.strokeStyle = "rgba(255,225,200,.18)"; ctx.lineWidth = 5 * unit;
+    smoothPath(ctx, halo, true); ctx.stroke();
+    // 가는 빛 선
+    ctx.shadowBlur = 5 * unit; ctx.strokeStyle = grad; ctx.lineWidth = 1.1 * unit; ctx.globalAlpha = 0.85;
+    smoothPath(ctx, halo, true); ctx.stroke();
+    ctx.globalAlpha = 1;
+    // 측정한 자리: 작은 별빛 (눈 · 코 · 입 위가 아닌 가장자리 위주)
+    ctx.shadowColor = "rgba(255,220,160,.95)"; ctx.shadowBlur = 6 * unit;
+    for (const i of [70, 300, 33, 263, 129, 358, 61, 291, 152, 10]) {
+      const p = P(i); sparkle(ctx, p.x, p.y, 2.6 * unit, "rgba(255,248,228,.95)");
     }
-    // 코: 아주 옅게
-    ctx.strokeStyle = "rgba(255,222,150,.55)"; ctx.lineWidth = 0.9 * unit; ctx.beginPath();
-    [168, 6, 197, 195, 5, 4].forEach((i, k) => { const p = P(i); k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); });
-    ctx.stroke();
-    // 측정한 자리: 작은 빛나는 점
-    ctx.shadowBlur = 4 * unit; ctx.shadowColor = "rgba(255,210,120,.9)";
-    for (const i of [70, 107, 336, 300, 33, 133, 362, 263, 129, 358, 61, 291, 0, 17, 152]) {
-      const p = P(i);
-      ctx.fillStyle = "#fff6dc"; ctx.beginPath(); ctx.arc(p.x, p.y, 1.6 * unit, 0, Math.PI * 2); ctx.fill();
-    }
+    // 테두리 위를 떠도는 작은 별
+    [3, 9, 15, 22, 28, 33].forEach((k, n) => { const p = halo[k]; sparkle(ctx, p.x, p.y, (n % 2 ? 2.2 : 3.2) * unit, "rgba(255,240,210,.9)"); });
     ctx.restore();
     // 삼정: 얼굴 옆에 세로 눈금자 (얼굴을 가로지르지 않게)
-    const rx = Math.min(W - 40 * unit, P(454).x + 12 * unit);
+    const rx = Math.min(W - 40 * unit, halo[8].x + 10 * unit);
     const ys = [10, 9, 2, 152].map((i) => P(i).y);
     ctx.save();
-    ctx.strokeStyle = "rgba(255,222,150,.85)"; ctx.lineWidth = 1.2 * unit;
+    ctx.lineCap = "round";
+    ctx.shadowColor = "rgba(255,214,170,.8)"; ctx.shadowBlur = 4 * unit;
+    ctx.strokeStyle = "rgba(255,230,190,.7)"; ctx.lineWidth = 1 * unit;
     ctx.beginPath(); ctx.moveTo(rx, ys[0]); ctx.lineTo(rx, ys[3]); ctx.stroke();
-    ys.forEach((y) => { ctx.beginPath(); ctx.moveTo(rx - 4 * unit, y); ctx.lineTo(rx + 4 * unit, y); ctx.stroke(); });
+    ys.forEach((y) => sparkle(ctx, rx, y, 2.4 * unit, "rgba(255,246,222,.95)"));
+    ctx.shadowBlur = 0;
     ctx.font = `700 ${9 * unit}px "Gowun Batang", serif`;
-    ["상정", "중정", "하정"].forEach((label, k) => tag(ctx, label, rx + 6 * unit, (ys[k] + ys[k + 1]) / 2, "rgba(43,29,92,.72)", "#ffe3a3", unit, "left"));
+    ["상정", "중정", "하정"].forEach((label, k) => tag(ctx, label, rx + 6 * unit, (ys[k] + ys[k + 1]) / 2, "rgba(43,29,92,.6)", "#ffe9bd", unit, "left"));
     ctx.restore();
   }
   if (layer === "palace") {
