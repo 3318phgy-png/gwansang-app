@@ -1,11 +1,11 @@
 // =====================================================================
 //  ads.js — Ad slot settings
 //  After Google AdSense approval, fill in `client` and each slot `id` below
-//  and real ads appear automatically. While empty, striped placeholders show
-//  so you can check the layout.
+//  and real ads appear automatically. While empty, ad slots stay hidden
+//  (add ?adpreview to the address to see the striped placeholders).
 // =====================================================================
 export const ADS_CONFIG = {
-  client: "", // e.g. "ca-pub-1234567890123456"
+  client: "ca-pub-2164050743743017", // AdSense publisher ID
   slots: {
     top: { id: "", size: "728×90 / 320×100", format: "horizontal" },  // top leaderboard
     infeed: { id: "", size: "300×250 · in-feed", format: "fluid" },    // between content (several)
@@ -15,6 +15,7 @@ export const ADS_CONFIG = {
 };
 
 let scriptLoaded = false;
+const PREVIEW = typeof location !== "undefined" && /[?&]adpreview/.test(location.search);
 
 export function fillAds(root = document) {
   const { client, slots } = ADS_CONFIG;
@@ -22,11 +23,12 @@ export function fillAds(root = document) {
     const conf = slots[el.dataset.ad] || slots.infeed;
     el.dataset.filled = "1";
     if (!client || !conf.id) {
-      el.classList.add("placeholder");
-      el.dataset.size = conf.size;
+      // No slot ID yet: hide the slot. Add ?adpreview to the address to see placeholders.
+      if (PREVIEW) { el.classList.add("placeholder"); el.dataset.size = conf.size; }
+      else { el.style.display = "none"; const anchor = el.closest(".ad-anchor"); if (anchor) anchor.style.display = "none"; }
       return;
     }
-    if (!scriptLoaded) {
+    if (!scriptLoaded && !document.querySelector('script[src*="adsbygoogle.js"]')) {
       const s = document.createElement("script");
       s.async = true;
       s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${client}`;
