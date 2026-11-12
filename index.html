@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>MyFaceFate · AI Face Reading — What Does Your Face Say About You?</title>
+  <meta name="description" content="Free AI face reading based on ancient Chinese face-reading classics. Snap a selfie and discover your money, love, career and health luck in seconds. Private — your photo never leaves your device. For entertainment only." />
+  <link rel="canonical" href="https://myfacefate.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://myfacefate.com/" />
+  <meta property="og:site_name" content="MyFaceFate" />
+  <meta property="og:title" content="MyFaceFate · What does your face say about your fate?" />
+  <meta property="og:description" content="One selfie. 478 face points. 10 lucks revealed — money, love, marriage, career & more. Ancient face reading meets AI. Free & private." />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="MyFaceFate · AI Face Reading" />
+  <meta name="twitter:description" content="One selfie. 10 lucks revealed. Ancient face reading meets AI — free, private, just for fun." />
+  <meta name="theme-color" content="#16123a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,800;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Serif+SC:wght@700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔮</text></svg>" />
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"WebApplication","name":"MyFaceFate","url":"https://myfacefate.com/","applicationCategory":"EntertainmentApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Free AI face reading inspired by ancient Chinese face-reading classics. For entertainment only."}
+  </script>
+</head>
+<body>
+  <!-- ═══════════ Header ═══════════ -->
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="logo" href="#read" data-tab="read">
+        <span class="logo-mark">相</span>
+        <span class="logo-text">MyFace<em>Fate</em><small>Ancient face reading × AI</small></span>
+      </a>
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="read">📸 Read My Face</button>
+        <button class="tab" data-tab="parts">🗺️ Face Map</button>
+        <button class="tab" data-tab="fortune">🍀 Luck Guide</button>
+        <button class="tab" data-tab="figures">🌟 Famous Faces</button>
+        <button class="tab" data-tab="books">📜 Ancient Secrets</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Ad: top leaderboard (728×90 desktop / 320×100 mobile) -->
+  <div class="wrap"><div class="ad-slot ad-top" data-ad="top"></div></div>
+
+  <div class="wrap layout">
+    <main id="main">
+
+      <!-- ═══════════ Tab 1: Read My Face ═══════════ -->
+      <section class="panel active" id="panel-read">
+        <div class="hero" id="hero">
+          <div class="hero-text">
+            <p class="eyebrow">✨ 1,000-year-old face reading, powered by AI</p>
+            <h1>Your face holds a fortune.<br /><span class="grad">Let's read it.</span></h1>
+            <p class="lead">Not a random horoscope. We map <b>478 points</b> on your face and read your brows, eyes, nose, lips and jaw through the three great classics of Chinese face reading — then reveal your <b>10 lucks</b>.</p>
+            <div class="step-box profile-picker">
+              <p class="step-title"><span class="step-no">1</span> Tell us about you <small>so your reading fits you</small></p>
+              <div class="pp-row"><em>Gender</em><div class="chips" id="genderChips"></div></div>
+              <div class="pp-row"><em>Age</em><div class="chips" id="ageChips"></div></div>
+            </div>
+            <p class="step-title"><span class="step-no">2</span> Read your face</p>
+            <div class="cta-row">
+              <button class="btn btn-primary btn-xl" id="btnCamera">📸 Take a Selfie</button>
+              <label class="btn btn-ghost btn-xl pick-photo" for="fileInput">🖼️ Upload a Photo</label>
+              <input type="file" id="fileInput" accept="image/*" hidden />
+            </div>
+            <p class="auto-hint">✨ Just look at the camera — it snaps automatically when your face is in the oval.</p>
+            <div class="drop-hint" id="dropZone">…or drag &amp; drop a photo here (paste works too)</div>
+            <ul class="trust">
+              <li>🔒 <b>100% private</b> — your photo never leaves your device</li>
+              <li>⚡ <b>Results in ~10 seconds</b></li>
+              <li>💸 <b>Free</b>, no sign-up</li>
+            </ul>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="orb">
+              <svg viewBox="0 0 200 240" class="face-sketch">
+                <ellipse cx="100" cy="120" rx="70" ry="92" />
+                <path d="M55 92 q20 -12 38 -2" /><path d="M107 90 q20 -10 38 2" />
+                <ellipse cx="74" cy="108" rx="13" ry="6" /><ellipse cx="126" cy="108" rx="13" ry="6" />
+                <path d="M100 112 v32 q-10 6 -14 4 M100 144 q10 6 14 4" />
+                <path d="M78 172 q22 14 44 0" />
+              </svg>
+              <span class="orb-tag t1">💰 Wealth</span><span class="orb-tag t2">🔮 Destiny</span><span class="orb-tag t3">🎓 Career</span><span class="orb-tag t4">💘 Love</span>
+            </div>
+          </div>
+        </div>
+
+        <ul class="photo-tips" aria-label="Photo tips">
+          <li>😀 Face the camera</li><li>💡 Good lighting</li><li>🙆 Hair off your forehead</li><li>🕶️ No glasses or mask</li>
+        </ul>
+
+        <div class="ear-picker card">
+          <div class="ear-head"><b>👂 Ear shape (optional)</b><span>Ears are hard to see in a selfie — pick yours for a more accurate reading!</span></div>
+          <div class="chips" id="earChips"></div>
+        </div>
+
+        <!-- Analyzing -->
+        <div class="analyzing card hidden" id="analyzing">
+          <div class="scan-box">
+            <canvas id="scanCanvas"></canvas>
+            <div class="scan-line"></div>
+          </div>
+          <div class="scan-msg">
+            <div class="spinner"></div>
+            <p id="scanMsg">Reading your face…</p>
+            <ol class="scan-steps" id="scanSteps">
+              <li>Finding 478 face points</li><li>Measuring your Three Zones</li><li>Reading the Five Officials</li><li>Mapping the Twelve Palaces</li><li>Consulting the ancient classics</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Notice (e.g. no face found) — stays visible -->
+        <div class="notice card hidden" id="notice">
+          <canvas id="noticePhoto"></canvas>
+          <div>
+            <h3 id="noticeTitle">We couldn't find a face</h3>
+            <p id="noticeText"></p>
+            <div class="cta-row">
+              <button class="btn btn-primary" id="noticeCamera">📸 Retake Selfie</button>
+              <label class="btn btn-primary hidden" id="noticeNative" for="captureInput">📸 Use Phone Camera</label>
+              <label class="btn btn-ghost" id="noticeUpload" for="fileInput">🖼️ Choose Another Photo</label>
+            </div>
+            <input type="file" id="captureInput" accept="image/*" capture="user" hidden />
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div class="result hidden" id="result"></div>
+
+        <!-- How it works (shown on landing; good for SEO/AdSense content) -->
+        <section class="how" id="how">
+          <div class="section-head center"><p class="eyebrow">How it works</p><h2>Three steps to your face reading</h2></div>
+          <div class="how-grid">
+            <div class="card how-step"><span class="num">1</span><div class="big">🤳</div><h3>Snap or upload</h3><p>Take a quick selfie or upload a front-facing photo. Everything runs right in your browser.</p></div>
+            <div class="card how-step"><span class="num">2</span><div class="big">📐</div><h3>We measure</h3><p>AI finds 478 landmarks and measures 22 real proportions — brows, eyes, nose, lips, jaw and the Three Zones.</p></div>
+            <div class="card how-step"><span class="num">3</span><div class="big">🔮</div><h3>Get your reading</h3><p>See your Five Element face type, 10 luck scores, feature-by-feature insights, glow-up tips and your celebrity face twin.</p></div>
+          </div>
+        </section>
+
+        <section class="faq">
+          <div class="section-head center"><p class="eyebrow">FAQ</p><h2>Good questions</h2></div>
+          <details class="card"><summary>Is my photo uploaded anywhere?</summary><p>No. Your photo is analyzed entirely inside your own browser and is never sent to or stored on any server. Close the page and it's gone.</p></details>
+          <details class="card"><summary>Is it random?</summary><p>Nope. The reading is based on real measurements of your face, so the same photo always gives the same result. Different photos (angle, lighting, expression) can shift things a little — just like your mood does!</p></details>
+          <details class="card"><summary>What is Chinese face reading?</summary><p>Face reading (Mian Xiang, 面相) is a centuries-old tradition that links facial features to personality and fortune. MyFaceFate reimagines three classic texts in a modern, fun, always-positive way.</p></details>
+          <details class="card"><summary>Is this scientific?</summary><p>No — and we're upfront about it. MyFaceFate is for entertainment only. It's a fun way to look at your face through an ancient lens, not a scientific, medical or psychological assessment.</p></details>
+        </section>
+      </section>
+
+      <!-- ═══════════ Tab 2: Face Map ═══════════ -->
+      <section class="panel" id="panel-parts">
+        <div class="section-head">
+          <p class="eyebrow">Face Reading 101</p>
+          <h2>The Face Map · 12 Palaces of Fortune</h2>
+          <p>The classics divide your face into twelve "palaces," each ruling a different part of life. Tap a dot to explore!</p>
+        </div>
+        <div class="palace-wrap card">
+          <div class="palace-map" id="palaceMap"></div>
+          <div class="palace-info" id="palaceInfo"></div>
+        </div>
+        <div class="section-head"><h2>The Five Officials · Your Face's Gatekeepers</h2><p>Five features, five jobs. Together they tell the story of your fate.</p></div>
+        <div class="organ-grid" id="organGrid"></div>
+        <div class="ad-slot ad-infeed" data-ad="infeed"></div>
+        <div class="section-head"><h2>Feature Dictionary</h2><p>Which one are you? In a real reading, we detect this automatically from your measurements.</p></div>
+        <div class="dict" id="partDict"></div>
+      </section>
+
+      <!-- ═══════════ Tab 3: Luck Guide ═══════════ -->
+      <section class="panel" id="panel-fortune">
+        <div class="section-head">
+          <p class="eyebrow">Luck, decoded</p>
+          <h2>Where does each luck live on your face?</h2>
+          <p>Money, love, marriage, career, study, health, business, fame, family and friends — where each one shows up on your face, plus easy glow-up tips to boost it.</p>
+        </div>
+        <div class="fortune-guide" id="fortuneGuide"></div>
+        <div class="ad-slot ad-infeed" data-ad="infeed"></div>
+        <div class="section-head"><h2>💄 Lucky Glow-Up Tips</h2><p>Liu Zhuang Xiang Fa says "the face follows the heart and your habits" — so a few small tweaks can change your luck.</p></div>
+        <div class="tip-grid" id="tipGrid"></div>
+      </section>
+
+      <!-- ═══════════ Tab 4: Famous Faces ═══════════ -->
+      <section class="panel" id="panel-figures">
+        <div class="section-head">
+          <p class="eyebrow">Famous Faces</p>
+          <h2>What made them legends? Their faces might tell us.</h2>
+          <p>Light-hearted readings based on widely known portraits and public images. Just for fun — not a judgment of anyone's real character.</p>
+        </div>
+        <div class="filter" id="figFilter">
+          <button class="chip active" data-f="all">🌐 All</button>
+          <button class="chip" data-f="legend">🏛️ Legends of History</button>
+          <button class="chip" data-f="icon">⭐ Modern Icons</button>
+          <button class="chip" data-f="f">👩 Women</button>
+          <button class="chip" data-f="m">👨 Men</button>
+        </div>
+        <div class="fig-grid" id="figGrid"></div>
+      </section>
+
+      <!-- ═══════════ Tab 5: Ancient Secrets ═══════════ -->
+      <section class="panel" id="panel-books">
+        <div class="section-head">
+          <p class="eyebrow">The books behind the magic</p>
+          <h2>The 3 Great Classics of Face Reading</h2>
+          <p>For centuries these three texts were the "bibles" of face readers across East Asia. Every MyFaceFate reading is built on their systems.</p>
+        </div>
+        <div class="book-grid" id="bookGrid"></div>
+        <div class="card concept">
+          <h3>📐 The Three Zones — your life in three chapters</h3>
+          <div class="sanjeong">
+            <div><b>Upper</b><span>Hairline → brows</span><em>Youth luck · wisdom · mentors</em></div>
+            <div><b>Middle</b><span>Brows → nose tip</span><em>Prime years · willpower · wealth</em></div>
+            <div><b>Lower</b><span>Under nose → chin</span><em>Legacy luck · vitality · family</em></div>
+          </div>
+          <p>The more evenly the three zones are balanced, the more smoothly luck is said to flow through every chapter of life. MyFaceFate actually measures these ratios from your photo.</p>
+        </div>
+      </section>
+
+      <p class="disclaimer"><b>For entertainment only.</b> MyFaceFate offers playful readings inspired by traditional Chinese face reading. It is not scientific, medical, psychological or financial advice, and it never judges anyone's worth by their appearance. Every face is a lucky face. Photos are processed only in your browser and are never uploaded or stored.</p>
+    </main>
+
+    <!-- ═══════════ Sidebar ═══════════ -->
+    <aside class="sidebar">
+      <div class="card today">
+        <p class="eyebrow">🔮 Today's face-reading tip</p>
+        <p id="todayWord"></p>
+      </div>
+      <div class="ad-slot ad-side" data-ad="side"></div>
+    </aside>
+  </div>
+
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <div>
+        <p class="f-logo"><span class="logo-mark sm">相</span> MyFace<em>Fate</em></p>
+        <p class="small">Ancient Chinese face reading, reimagined with AI. For entertainment only.</p>
+      </div>
+      <p class="small links"><a href="about.html">About &amp; Contact</a> · <a href="privacy.html">Privacy Policy</a> · <a href="terms.html">Terms of Use</a> · © 2026 MyFaceFate</p>
+    </div>
+  </footer>
+
+  <!-- Mobile sticky bottom ad (320×50) -->
+  <div class="ad-anchor" id="adAnchor">
+    <div class="ad-slot ad-bottom" data-ad="bottom"></div>
+    <button class="ad-close" id="adClose" aria-label="Close ad">×</button>
+  </div>
+
+  <!-- Camera modal -->
+  <div class="modal hidden" id="camModal" role="dialog" aria-modal="true" aria-label="Take a selfie">
+    <div class="cam-box">
+      <video id="camVideo" playsinline autoplay muted></video>
+      <svg class="cam-guide" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice"><defs><mask id="m"><rect width="300" height="400" fill="#fff"/><ellipse cx="150" cy="190" rx="95" ry="128" fill="#000"/></mask></defs><rect width="300" height="400" fill="rgba(10,6,30,.55)" mask="url(#m)"/><ellipse id="camOval" cx="150" cy="190" rx="95" ry="128" fill="none" stroke="#ffd36e" stroke-width="4" stroke-dasharray="8 6"/></svg>
+      <canvas id="camPreview" class="cam-preview hidden"></canvas>
+      <div class="cam-autobar" id="camAutoBar"></div>
+      <div class="cam-count" id="camCount"></div>
+      <p class="cam-status" id="camStatus">📷 Starting your camera…</p>
+      <p class="cam-name" id="camName"></p>
+      <div class="cam-ctrl" id="camCtrlShoot">
+        <button class="btn btn-ghost" id="camCancel">Cancel</button>
+        <button class="shutter" id="camShot" aria-label="Take photo" disabled></button>
+        <button class="btn btn-ghost" id="camFlip">🔄 Switch</button>
+      </div>
+      <div class="cam-ctrl hidden" id="camCtrlConfirm">
+        <button class="btn btn-ghost" id="camRetake">↩️ Retake</button>
+        <button class="btn btn-primary" id="camUse">✅ Read This Photo</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gender pop-up (shown once if gender wasn't picked before shooting/uploading) -->
+  <div class="modal hidden" id="genderModal" role="dialog" aria-modal="true" aria-label="Choose gender">
+    <div class="card gender-box">
+      <h3>One quick question before we read your face</h3>
+      <p>Tell us your gender and we'll match you with <b>famous face twins of the same gender</b> — and guys get <b>grooming tips</b> instead of makeup tips.</p>
+      <div class="gender-btns">
+        <button class="btn btn-big-g" data-pick="f">👩<span>Female</span></button>
+        <button class="btn btn-big-g" data-pick="m">👨<span>Male</span></button>
+      </div>
+      <button class="btn btn-ghost" data-pick="">Skip — just read my face</button>
+    </div>
+  </div>
+
+  <div class="toast hidden" id="toast"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
