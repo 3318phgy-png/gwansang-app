@@ -1,0 +1,27 @@
+/* =====================================================================
+   ja.css — 日本語版専用スタイル（/css/style.css に重ねて適用。英語版は変更しません）
+   ===================================================================== */
+:root {
+  --font: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+  --display: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --serif: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+}
+body { line-break: strict; word-break: normal; }
+.hero h1, .section-head h2, .hook-line, .how-step h3, #scanMsg, .doc h1, .doc h2 { letter-spacing: 0; }
+.hero h1 { line-height: 1.2; }
+.hook-line { font-style: normal; line-height: 1.45; }
+.grad { font-style: normal; }
+.logo-text { font-family: "Fraunces", Georgia, serif; }
+.logo-text small { font-family: var(--font); letter-spacing: 1px; }
+.f-logo { font-family: "Fraunces", Georgia, serif; }
+p, li { line-height: 1.8; }
+
+/* 言語切り替え */
+.lang-menu { position: relative; margin-left: 4px; }
+.lang-menu summary { list-style: none; cursor: pointer; color: #fff; font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: 999px; background: rgba(255, 255, 255, .12); white-space: nowrap; }
+.lang-menu summary::-webkit-details-marker { display: none; }
+.lang-menu[open] summary { background: rgba(255, 255, 255, .22); }
+.lang-menu ul { position: absolute; z-index: 60; left: 0; top: calc(100% + 6px); min-width: 150px; margin: 0; padding: 6px; list-style: none; background: var(--card); border-radius: 14px; box-shadow: var(--shadow-lg); }
+.lang-menu a { display: block; padding: 8px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.lang-menu a:hover { background: var(--bg2); }
+.lang-menu a[aria-current="true"] { font-weight: 800; color: var(--violet); }
