@@ -480,3 +480,15 @@ a { color: var(--violet); }
 .lang-menu a { display: block; padding: 8px 12px; border-radius: 10px; color: var(--ink); text-decoration: none; font-size: 14px; line-height: 1.4; }
 .lang-menu a:hover { background: var(--bg2); }
 .lang-menu a[aria-current="true"] { font-weight: 800; color: var(--violet); }
+
+/* Language strip on the home page (all editions) */
+.lang-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 14px 0 0; font-size: 13.5px; }
+.lang-strip a { color: var(--ink2); text-decoration: none; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); white-space: nowrap; }
+.lang-strip a:hover { color: var(--violet); border-color: var(--violet); }
+.lang-strip a[aria-current="true"] { color: var(--violet); font-weight: 800; border-color: var(--violet); }
+@media (max-width: 760px) { .hero-text .lang-strip { justify-content: center; } }
+
+/* Browser-language suggestion bar (shown only when it helps; never redirects) */
+.lang-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; padding: 9px 44px 9px 16px; position: relative; background: var(--gold); color: var(--night); font-size: 14px; font-weight: 600; text-align: center; }
+.lang-bar-go { color: var(--night); font-weight: 800; text-decoration: underline; white-space: nowrap; }
+.lang-bar-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; font-size: 22px; line-height: 1; color: var(--night); padding: 4px 8px; }
