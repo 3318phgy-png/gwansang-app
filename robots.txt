@@ -2,3 +2,8 @@ User-agent: *
 Allow: /
 
 Sitemap: https://myfacefate.com/sitemap.xml
+Sitemap: https://myfacefate.com/zh/sitemap.xml
+Sitemap: https://myfacefate.com/ja/sitemap.xml
+Sitemap: https://myfacefate.com/es/sitemap.xml
+Sitemap: https://myfacefate.com/fr/sitemap.xml
+Sitemap: https://myfacefate.com/de/sitemap.xml
