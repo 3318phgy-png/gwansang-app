@@ -7,7 +7,7 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://myfacefate.com/es/" />
     <xhtml:link rel="alternate" hreflang="fr" href="https://myfacefate.com/fr/" />
     <xhtml:link rel="alternate" hreflang="de" href="https://myfacefate.com/de/" /></url>
-  <url><loc>https://myfacefate.com/ja/about.html</loc><priority>0.5</priority></url>
-  <url><loc>https://myfacefate.com/ja/privacy.html</loc><priority>0.3</priority></url>
-  <url><loc>https://myfacefate.com/ja/terms.html</loc><priority>0.3</priority></url>
+  <url><loc>https://myfacefate.com/ja/about</loc><priority>0.5</priority></url>
+  <url><loc>https://myfacefate.com/ja/privacy</loc><priority>0.3</priority></url>
+  <url><loc>https://myfacefate.com/ja/terms</loc><priority>0.3</priority></url>
 </urlset>
