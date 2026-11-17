@@ -492,3 +492,18 @@ a { color: var(--violet); }
 .lang-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; padding: 9px 44px 9px 16px; position: relative; background: var(--gold); color: var(--night); font-size: 14px; font-weight: 600; text-align: center; }
 .lang-bar-go { color: var(--night); font-weight: 800; text-decoration: underline; white-space: nowrap; }
 .lang-bar-x { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); border: 0; background: transparent; font-size: 22px; line-height: 1; color: var(--night); padding: 4px 8px; }
+
+/* Sister app promo (MyFaceMBTI) — one slim line under the hero */
+.sister-app { display: block; margin: 16px 0 0; padding: 11px 16px; border-radius: 16px;
+  text-decoration: none; color: var(--ink); font-size: 14px; line-height: 1.35;
+  background: linear-gradient(100deg, rgba(124,92,255,.10), rgba(255,111,145,.10) 60%, rgba(255,201,77,.14));
+  border: 1px solid rgba(124,92,255,.22); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.sister-app:hover { transform: translateY(-1px); border-color: var(--violet); box-shadow: var(--shadow); }
+.sister-app:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.sister-app .sa-tag { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fff;
+  background: linear-gradient(90deg, var(--violet), var(--coral)); padding: 3px 8px; border-radius: 999px; white-space: nowrap; margin-right: 6px; vertical-align: 1px; }
+.sister-app .sa-go { margin-left: 6px; }
+.sister-app .sa-text b { color: var(--violet); }
+.sister-app .sa-go { font-weight: 800; color: var(--violet); white-space: nowrap; }
+.sister-app:hover .sa-go span { display: inline-block; transform: translateX(3px); transition: transform .15s ease; }
+@media (max-width: 760px) { .hero-text .sister-app { text-align: center; } }
