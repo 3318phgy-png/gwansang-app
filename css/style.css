@@ -453,3 +453,16 @@ button { font-family: inherit; cursor: pointer; }
   .hero .lead { font-size: 14.5px; margin-bottom: 14px; }
   .step-box .chip { padding: 7px 11px; font-size: 14px; }
 }
+
+/* 자매 앱 홍보 (MyFaceMBTI) — 첫 화면 아래 한 줄 */
+.sister-app { display: block; margin: 16px 0 0; padding: 11px 16px; border-radius: 16px; text-decoration: none; color: var(--ink); font-size: 14px; line-height: 1.5; word-break: keep-all;
+  background: linear-gradient(100deg, rgba(139,92,246,.12), rgba(255,107,139,.10) 60%, rgba(255,201,77,.16));
+  border: 1px solid rgba(139,92,246,.25); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.sister-app:hover { transform: translateY(-1px); border-color: var(--violet); box-shadow: var(--shadow); }
+.sister-app:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.sister-app .sa-tag { font-size: 11.5px; font-weight: 800; color: #fff; background: linear-gradient(90deg, var(--violet), var(--coral));
+  padding: 3px 9px; border-radius: 999px; white-space: nowrap; margin-right: 6px; vertical-align: 1px; }
+.sister-app .sa-text b { color: var(--violet); }
+.sister-app .sa-go { font-weight: 800; color: var(--violet); white-space: nowrap; margin-left: 6px; }
+.sister-app:hover .sa-go span { display: inline-block; transform: translateX(3px); transition: transform .15s ease; }
+@media (max-width: 760px) { .hero-text .sister-app { text-align: center; } }
