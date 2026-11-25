@@ -3,10 +3,11 @@
   <url><loc>https://myfacefate.com/</loc><changefreq>weekly</changefreq><priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="en" href="https://myfacefate.com/" />
     <xhtml:link rel="alternate" hreflang="zh-Hans" href="https://myfacefate.com/zh/" />
-    <xhtml:link rel="alternate" hreflang="ja" href="https://myfacefate.com/ja/" />
     <xhtml:link rel="alternate" hreflang="es" href="https://myfacefate.com/es/" />
     <xhtml:link rel="alternate" hreflang="fr" href="https://myfacefate.com/fr/" />
-    <xhtml:link rel="alternate" hreflang="de" href="https://myfacefate.com/de/" /></url>
+    <xhtml:link rel="alternate" hreflang="ru" href="https://myfacefate.com/ru/" />
+    <xhtml:link rel="alternate" hreflang="de" href="https://myfacefate.com/de/" />
+    <xhtml:link rel="alternate" hreflang="ja" href="https://myfacefate.com/ja/" /></url>
   <url><loc>https://myfacefate.com/about</loc><priority>0.5</priority></url>
   <url><loc>https://myfacefate.com/privacy</loc><priority>0.3</priority></url>
   <url><loc>https://myfacefate.com/terms</loc><priority>0.3</priority></url>

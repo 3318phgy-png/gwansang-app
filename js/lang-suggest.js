@@ -12,6 +12,7 @@
     ja: { dir: "ja/", name: "日本語", msg: "日本語版もあります。", go: "日本語で見る", close: "閉じる" },
     es: { dir: "es/", name: "Español", msg: "Esta página también está disponible en español.", go: "Ver en español", close: "Cerrar" },
     fr: { dir: "fr/", name: "Français", msg: "Cette page existe aussi en français.", go: "Voir en français", close: "Fermer" },
+    ru: { dir: "ru/", name: "Русский", msg: "Эта страница есть и на русском.", go: "Открыть на русском", close: "Закрыть" },
     de: { dir: "de/", name: "Deutsch", msg: "Diese Seite gibt es auch auf Deutsch.", go: "Auf Deutsch ansehen", close: "Schließen" },
   };
   function norm(tag) {
@@ -42,7 +43,7 @@
   if (!target || target === current) return;
 
   // Same page in the other language: /ja/about.html -> /about.html -> /de/about.html
-  var page = location.pathname.replace(/^\/(zh|ja|es|fr|de)\//, "/").replace(/^\//, "");
+  var page = location.pathname.replace(/^\/(zh|ja|es|fr|de|ru)\//, "/").replace(/^\//, "");
   var L = LANGS[target];
   var bar = document.createElement("div");
   bar.className = "lang-bar";
