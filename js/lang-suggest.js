@@ -34,6 +34,12 @@
     if (l) set("mff_lang", l);
   });
 
+  // On phones the language pills scroll sideways: bring the current language into view.
+  document.addEventListener("DOMContentLoaded", function () {
+    var row = document.querySelector(".lang-pills-inner"), on = row && row.querySelector('[aria-current="true"]');
+    if (row && on && row.scrollWidth > row.clientWidth) row.scrollLeft = on.offsetLeft - (row.clientWidth - on.offsetWidth) / 2;
+  });
+
   if (get("mff_lang_bar_closed") === current) return;
   var target = norm(get("mff_lang"));
   if (!target) {

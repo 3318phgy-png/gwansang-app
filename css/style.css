@@ -481,12 +481,21 @@ a { color: var(--violet); }
 .lang-menu a:hover { background: var(--bg2); }
 .lang-menu a[aria-current="true"] { font-weight: 800; color: var(--violet); }
 
-/* Language strip on the home page (all editions) */
-.lang-strip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: 14px 0 0; font-size: 13.5px; }
-.lang-strip a { color: var(--ink2); text-decoration: none; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); white-space: nowrap; }
-.lang-strip a:hover { color: var(--violet); border-color: var(--violet); }
-.lang-strip a[aria-current="true"] { color: var(--violet); font-weight: 800; border-color: var(--violet); }
-@media (max-width: 760px) { .hero-text .lang-strip { justify-content: center; } }
+/* Language pills under the header on the home page (all editions) */
+.lang-pills { padding: 16px 0 4px; }
+.lang-pills-inner { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.lang-pills a { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: var(--card); border: 1px solid var(--line);
+  box-shadow: var(--shadow); color: var(--ink); font-size: 15px; font-weight: 800; text-decoration: none; white-space: nowrap; transition: transform .15s ease, border-color .15s ease; }
+.lang-pills a:hover { transform: translateY(-1px); border-color: var(--violet); }
+.lang-pills a:focus-visible { outline: 2px solid var(--violet); outline-offset: 2px; }
+.lang-pills .flag { font-size: 18px; line-height: 1; }
+.lang-pills a[aria-current="true"] { color: #fff; border-color: transparent; background: linear-gradient(135deg, #ff6f91, #ff8a5c); box-shadow: 0 8px 22px -10px rgba(255, 111, 145, .8); }
+@media (max-width: 760px) {
+  .lang-pills { padding-top: 12px; }
+  .lang-pills-inner { flex-wrap: nowrap; justify-content: flex-start; overflow-x: auto; scrollbar-width: none; padding-bottom: 6px; -webkit-overflow-scrolling: touch; }
+  .lang-pills-inner::-webkit-scrollbar { display: none; }
+  .lang-pills a { padding: 8px 14px; font-size: 14px; }
+}
 
 /* Browser-language suggestion bar (shown only when it helps; never redirects) */
 .lang-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 12px; padding: 9px 44px 9px 16px; position: relative; background: var(--gold); color: var(--night); font-size: 14px; font-weight: 600; text-align: center; }
